@@ -1493,7 +1493,7 @@ function acctPrintDay(v,C){
     h+="<tr><td>"+mark(m.name,true)+esc(m.name)+"</td>"+
        R+money(m.m)+"</td>"+R+(m.inn?money(m.inn):"—")+"</td>"+
        R+(m.out?money(m.out):"—")+"</td>"+R+money(m.exp)+"</td>"+
-       R+"<b>"+money(m.e)+"</b>"+(m.counted?"":' <span class="chip">not counted</span>')+"</td>"+
+       R+"<b>"+money(m.e)+"</b></td>"+
        R+(m.counted?diffTxt(m.diff):"—")+"</td></tr>";
   }
   h+='<tr class="tot"><td>ALL ACCOUNTS TOGETHER</td>'+
