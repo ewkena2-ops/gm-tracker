@@ -104,6 +104,10 @@ label.f > span{
 .inp.money{text-align:right; font-variant-numeric:tabular-nums; font-weight:600}
 .inp[readonly]{background:#f6f8fc; color:var(--navy); font-weight:700}
 textarea.inp{min-height:70px; resize:vertical; line-height:1.4}
+textarea.inp.tall{min-height:150px}          /* the free "anything else" page */
+/* the remark box at the foot of every card — set apart, never in the way */
+.f.rem{margin-top:18px; padding-top:14px; border-top:1px dashed var(--line)}
+.f.rem textarea.inp{min-height:54px}
 .help{font-size:11.5px; color:var(--muted); margin-top:4px}
 
 /* ---------- buttons ---------- */
@@ -531,19 +535,37 @@ tfoot td{background:#fff6dd; font-weight:700; color:var(--navy)}
 
     <div class="lst" id="lst_cashOut" style="margin-top:20px"></div>
     <div id="matchOut"></div>
+
+    <label class="f rem"><span>Remark</span>
+      <textarea class="inp" id="f_remMoney"
+        placeholder="Anything you want to say about the money today — a payment you are still chasing, a receipt you could not get, a figure you are not sure about."></textarea></label>
   </div>
 
   <div class="card">
-    <h2>2 &bull; Loan repayment <span class="hint">What was paid back today, and what is still owed</span></h2>
+    <h2>2 &bull; Cheques received <span class="hint">Kept here until the money is really in the bank</span></h2>
+    <div class="lst" id="lst_cheques"></div>
+    <div id="chqBox"></div>
+
+    <label class="f rem"><span>Remark</span>
+      <textarea class="inp" id="f_remCheques"
+        placeholder="Anything about the cheques — who promised to pay in and when, a client you do not trust, a cheque you are holding back."></textarea></label>
+  </div>
+
+  <div class="card">
+    <h2>3 &bull; Loan repayment <span class="hint">What was paid back today, and what is still owed</span></h2>
     <div class="lst" id="lst_loans"></div>
     <div id="loanBox"></div>
 
     <div class="lst" id="lst_transfers" style="margin-top:20px"></div>
     <div id="xferBox"></div>
+
+    <label class="f rem"><span>Remark</span>
+      <textarea class="inp" id="f_remLoans"
+        placeholder="Anything about the loans or the transfers — a payment you had to delay, what the bank said, interest you think is too high."></textarea></label>
   </div>
 
   <div class="card">
-    <h2>3 &bull; Production, sales &amp; delivery</h2>
+    <h2>4 &bull; Production, sales &amp; delivery</h2>
     <div class="grid g5">
       <label class="f"><span id="lbl_produced">Cabinets made (m²)</span>
         <input class="inp money" id="f_produced" inputmode="decimal"></label>
@@ -572,44 +594,74 @@ tfoot td{background:#fff6dd; font-weight:700; color:var(--navy)}
 
     <div class="lst" id="lst_damages" style="margin-top:20px"></div>
     <div id="matchDmg"></div>
+
+    <label class="f rem"><span>Remark</span>
+      <textarea class="inp" id="f_remProd"
+        placeholder="Anything about the work — why output was low or high, a customer who would not sign, a delivery sent back."></textarea></label>
   </div>
 
   <div class="card">
-    <h2>4 &bull; Machines &amp; materials</h2>
+    <h2>5 &bull; Machines &amp; materials</h2>
     <div id="staffBox"></div>
 
     <div class="lst" id="lst_downtime"></div>
     <div class="lst" id="lst_materials" style="margin-top:20px"></div>
+
+    <label class="f rem"><span>Remark</span>
+      <textarea class="inp" id="f_remMach"
+        placeholder="Anything about the machines or the materials — a spare part you need, a supplier who let you down, a machine about to fail."></textarea></label>
   </div>
 
   <div class="card">
-    <h2>5 &bull; Problems &amp; decisions</h2>
+    <h2>6 &bull; Problems &amp; decisions <span class="hint">One line for each problem &mdash; add as many as the day had</span></h2>
+    <div class="lst" id="lst_probs"></div>
+    <div id="askBox"></div>
+
+    <div class="acchd" style="margin-top:20px"><b>The day in a sentence</b>
+      <span>Optional &mdash; a short summary over the top of the lines above</span></div>
     <div class="grid g2">
       <label class="f"><span>Problems today</span>
         <textarea class="inp" id="f_problems"
-          placeholder="What went wrong, when, who was affected, and what it cost in ETB or m²."></textarea></label>
+          placeholder="Leave this empty if the lines above say it all."></textarea></label>
       <label class="f"><span>Proposed fix</span>
         <textarea class="inp" id="f_fix"
-          placeholder="What you will do, who will do it, and by which date."></textarea></label>
+          placeholder="Leave this empty if the lines above say it all."></textarea></label>
     </div>
     <div id="probHint"></div>
     <div class="row" style="margin-top:14px">
       <label class="f" style="max-width:240px"><span>Need Amare&rsquo;s decision?</span>
         <select class="inp" id="f_decision">
           <option value="">&mdash;</option><option>No</option><option>Yes</option>
-        </select></label>
+        </select>
+        <div class="help" id="decHelp">Fills itself from the lines above</div></label>
       <label class="f" style="flex:1"><span>If yes &mdash; what must he decide?</span>
-        <input class="inp" id="f_decisionWhat" placeholder="The one question for the owner"></label>
+        <input class="inp" id="f_decisionWhat" placeholder="Only if it is not already a line above"></label>
     </div>
+
+    <label class="f rem"><span>Remark</span>
+      <textarea class="inp" id="f_remProb"
+        placeholder="Anything more about the problems — who is involved, what you already tried, what you need from Amare."></textarea></label>
   </div>
 
   <div class="card">
-    <h2>6 &bull; Tomorrow&rsquo;s top 3 priorities</h2>
+    <h2>7 &bull; Anything else <span class="hint">Whatever the boxes above have no place for</span></h2>
+    <label class="f"><span>Write anything else about today</span>
+      <textarea class="inp tall" id="f_notes"
+        placeholder="Anything at all — a visitor, a phone call, a price change, something a worker said, a promise made to a customer, an idea for tomorrow. Write it in your own words, one thing per line."></textarea>
+      <div class="help">Printed at the end of the daily report, word for word.</div></label>
+  </div>
+
+  <div class="card">
+    <h2>8 &bull; Tomorrow&rsquo;s top 3 priorities</h2>
     <div class="grid g3">
       <label class="f"><span>Priority 1</span><input class="inp" id="f_p1"></label>
       <label class="f"><span>Priority 2</span><input class="inp" id="f_p2"></label>
       <label class="f"><span>Priority 3</span><input class="inp" id="f_p3"></label>
     </div>
+
+    <label class="f rem"><span>Remark</span>
+      <textarea class="inp" id="f_remPrior"
+        placeholder="Anything about tomorrow — who will be away, a delivery expected, a meeting booked."></textarea></label>
     <div class="row" style="margin-top:16px; align-items:center">
       <label class="f" style="max-width:240px"><span>Report sent on time?</span>
         <select class="inp" id="f_ontime">
@@ -824,10 +876,26 @@ var KEY = "gm30_tracker_v1";
 
 /* Printed on the gold strip at the top so it is never a guess which copy of the
    page you are looking at — the browser, the phone app, or an old tab. */
-var BUILD = "19";
+var BUILD = "24";
 
 /* the repeating line-item lists carried on every day */
-var LISTKEYS = ["cashIn","cashOut","loans","transfers","deliveries","damages","downtime","materials"];
+var LISTKEYS = ["cashIn","cashOut","cheques","loans","transfers","deliveries","damages",
+                "downtime","materials","probs"];
+
+/* The free remark box that sits at the foot of every card on the entry page.
+   Keyed by what the section is about and never by its number — cards get
+   renumbered whenever one is added, and saved remarks must not follow them.
+   Card 7 has no entry here: the whole card is already a free box (d.notes). */
+var REMARKS = [
+  {k:"remMoney",   sec:"Money in and out"},
+  {k:"remCheques", sec:"Cheques received"},
+  {k:"remLoans",   sec:"Loan repayment"},
+  {k:"remProd",    sec:"Production, sales and delivery"},
+  {k:"remMach",    sec:"Machines and materials"},
+  {k:"remProb",    sec:"Problems and decisions"},
+  {k:"remPrior",   sec:"Tomorrow&rsquo;s priorities"}
+];
+var REMKEYS = (function(){ var a=[]; for(var i=0;i<REMARKS.length;i++) a.push(REMARKS[i].k); return a; })();
 
 function blankDay(){
   var d = {morning:"",received:"",paid:"",evening:"",sold:"",delivered:"",revenue:"",produced:"",
@@ -836,9 +904,12 @@ function blankDay(){
            countedBy:"", varReason:"",
            /* order book and notes */
            ordersNew:"", ordersValue:"", custNote:"",
+           /* the free page — anything the boxes above have no place for */
+           notes:"",
            /* morning and evening balance counted bank by bank */
            accBal:{}};
   for(var i=0;i<LISTKEYS.length;i++) d[LISTKEYS[i]] = [];
+  for(var r=0;r<REMKEYS.length;r++) d[REMKEYS[r]] = "";
   return d;
 }
 /* older saved days pre-date the lists — always read through this */
@@ -870,6 +941,73 @@ function rowIsCash(r){
   if(m!=="") return false;                       /* cheque, transfer, telebirr … */
   var b=String(r.bank||"").trim();               /* method blank: a named bank still means not cash */
   return b==="" || b==="No bank — cash";
+}
+/* =========================================================
+   Cheques received, and whether the money behind them arrived.
+   A cheque is written down on the day it is handed over, and the payment
+   itself is already a line in Money in — so this list changes no total and
+   no balance. It exists to answer one question: which cheques have really
+   turned into money, and which are still waiting for the client to pay in.
+   Each cheque keeps its state on the day it was received, so acctMoves()
+   deliberately never reads this list; counting it would take the money twice.
+========================================================= */
+var CHQSTATUS = ["Waiting for money","Money arrived","Returned unpaid"];
+/* nothing chosen yet still means waiting — a cheque is never money until it clears */
+function chqState(r){
+  var s=String((r||{}).status||"").trim();
+  return s==="Money arrived" ? "in" : s==="Returned unpaid" ? "bad" : "wait";
+}
+/* the filled lines of one list on the day being typed, before it is saved */
+function rowsLive(k){
+  var a=LSTATE[k]||[], out=[];
+  for(var i=0;i<a.length;i++){ if(rowFilled(a[i])) out.push(a[i]); }
+  return out;
+}
+/* every cheque of the whole trial, oldest first, tagged with the day it came in.
+   `live` reads the day on screen from the boxes instead of from what is saved. */
+function chqAll(live){
+  var keys=dayKeys(live), out=[];
+  for(var i=0;i<keys.length;i++){
+    var iso=keys[i];
+    var rows=(live && iso===sel) ? rowsLive("cheques") : liveRows(getDay(iso),"cheques");
+    for(var j=0;j<rows.length;j++) out.push({day:dayIndex(iso), iso:iso, r:rows[j]});
+  }
+  return out;
+}
+function chqByState(want,live,asOf){
+  var all=chqAll(live), out=[];
+  for(var i=0;i<all.length;i++){
+    if(chqState(all[i].r)!==want) continue;
+    if(asOf && all[i].iso>asOf) continue;        /* a report never shows cheques from later days */
+    out.push(all[i]);
+  }
+  return out;
+}
+function chqSum(list){
+  var s=0; for(var i=0;i<list.length;i++) s+=num(list[i].r.amount);
+  return s;
+}
+/* Every decision the owner is being asked for on one day, as plain sentences.
+   A problem line marked "Needs a decision? Yes" is one — that is how a single
+   day can now carry several. The old single Yes/No box is still read, so days
+   entered before the list existed keep reporting exactly as they did. */
+function askList(d){
+  if(!d) return [];
+  var rows=liveRows(d,"probs"), out=[], i;
+  for(i=0;i<rows.length;i++){
+    if(String(rows[i].decide||"").trim()!=="Yes") continue;
+    out.push(has(rows[i].ask) ? String(rows[i].ask)
+                              : (has(rows[i].what) ? String(rows[i].what)
+                                                   : "See the problems above."));
+  }
+  /* The Yes/No box sets itself to Yes off the lines above, so counting it as
+     well would ask for the same decision twice. It only adds one of its own
+     when it carries its own question, or when there is no flagged line at all. */
+  if(d.decision==="Yes"){
+    if(has(d.decisionWhat)) out.push(String(d.decisionWhat));
+    else if(!out.length)    out.push("See the problems above.");
+  }
+  return out;
 }
 /* The people and companies we buy from. Written once so the name is spelled the
    same way on every line, which is what makes the per-supplier totals add up.
@@ -1108,7 +1246,7 @@ function filled(d){
   var keys=["morning","received","paid","evening","sold","delivered","revenue","produced",
             "damaged","problems","fix","p1","ontime",
             "countedBy","varReason",
-            "ordersNew","ordersValue","custNote"];
+            "ordersNew","ordersValue","custNote","notes"].concat(REMKEYS);
   for(var i=0;i<keys.length;i++){ if(has(d[keys[i]])) return true; }
   for(var j=0;j<LISTKEYS.length;j++){ if(liveRows(d,LISTKEYS[j]).length) return true; }
   /* a day where only the bank balances were counted still counts as entered */
@@ -1138,7 +1276,8 @@ function calc(d){
 /* totals over a list of day-indexes */
 function totals(from,to){
   var t={received:0,paid:0,sold:0,delivered:0,revenue:0,produced:0,damaged:0,profit:0,
-         reported:0,onTime:0,decisions:0,evening:null,firstMorning:null,days:0};
+         reported:0,onTime:0,decisions:0,asks:0,probs:0,probCost:0,
+         evening:null,firstMorning:null,days:0};
   for(var i=from;i<=to;i++){
     var iso=dayISO(i), d=getDay(iso); if(!filled(d)) continue;
     var c=calc(d);
@@ -1149,7 +1288,12 @@ function totals(from,to){
     t.profit+=c.profit;
     t.reported++;
     if(d.ontime==="Yes") t.onTime++;
-    if(d.decision==="Yes") t.decisions++;
+    /* one day can now ask for several decisions — count both the days and the asks */
+    var ask=askList(d);
+    t.asks+=ask.length;
+    if(ask.length) t.decisions++;
+    t.probs+=liveRows(d,"probs").length;
+    t.probCost+=sumRows(d,"probs","cost");
     t.evening=c.evening;
     if(t.firstMorning===null) t.firstMorning=num(d.morning);
   }
@@ -1177,7 +1321,7 @@ var sel = todayISO();
 var F = ["morning","received","paid","evening","sold","delivered","revenue","produced","damaged",
          "problems","fix","decision","decisionWhat","p1","p2","p3","ontime",
          "countedBy","varReason",
-         "ordersNew","ordersValue","custNote"];
+         "ordersNew","ordersValue","custNote","notes"].concat(REMKEYS);
 
 /* =========================================================
    line-item lists — the detail behind every headline number
@@ -1555,6 +1699,42 @@ var LISTS = {
       {k:"reason", l:"Reason",      t:"text", ph:"Why this money went out", w:"150pt"}
     ]
   },
+  /* One line per problem. A day rarely has only one, and a problem with no owner
+     and no date is a complaint, not a plan — so who and by when are columns.
+     The last two columns are how a single problem asks the owner to decide;
+     that is why several decisions in one day now fit. */
+  probs:{
+    title:"Problems today — one line for each one",
+    why:"What went wrong, what it cost, what will be done and by when.",
+    add:"+ Add a problem",
+    cols:[
+      {k:"what",   l:"What went wrong", t:"text", ph:"The problem in one line", w:"170pt"},
+      {k:"cost",   l:"What it cost",    t:"money", total:true, w:"92pt"},
+      {k:"fix",    l:"What will be done", t:"text", ph:"The fix you propose", w:"170pt"},
+      {k:"by",     l:"By when",         t:"date", w:"105pt"},
+      {k:"decide", l:"Needs a decision?", t:"sel", opts:["No","Yes"], w:"96pt"},
+      {k:"ask",    l:"What must be decided", t:"text",
+                   ph:"Only if it needs the owner", w:"170pt"}
+    ]
+  },
+  cheques:{
+    title:"Cheques received — waiting for the money",
+    why:"A cheque is only money once it is really in the bank. Write it here the day it is handed "+
+        "over, and mark it Arrived on the day the money lands.",
+    add:"+ Add a cheque",
+    cols:[
+      {k:"who",    l:"Who gave it",   t:"text", ph:"Customer or company", w:"130pt"},
+      {k:"ctype",  l:"Code type",     t:"sel",  opts:CODETYPES, w:"92pt"},
+      {k:"code",   l:"Code / name",   t:"text", ph:"Code or name", w:"110pt", asks:"ctype", askMap:CODEASK},
+      {k:"ref",    l:"Cheque no.",    t:"text", ph:"Number on the cheque", w:"100pt"},
+      {k:"bank",   l:"Bank",          t:"sel",  opts:ETHBANKS, w:"140pt"},
+      {k:"amount", l:"Amount",        t:"money", total:true, w:"92pt"},
+      {k:"due",    l:"Date on the cheque", t:"date", w:"105pt"},
+      {k:"status", l:"Money arrived?",t:"sel",  opts:CHQSTATUS, w:"110pt"},
+      {k:"gotOn",  l:"Date the money came", t:"date", w:"105pt"},
+      {k:"note",   l:"Note",          t:"text", ph:"What the client said, when they will pay in", w:"150pt"}
+    ]
+  },
   loans:{
     title:"Loan repayments made today",
     why:"Who the loan is from, how much was paid back, and what is still left to pay.",
@@ -1851,6 +2031,71 @@ function refreshChecks(){
       : "";
   }
 
+  /* cheques — which ones have really turned into money, and which have not.
+     Cheques still waiting from earlier days are listed here too, because the
+     line itself lives on the day it was received and would otherwise be lost. */
+  var cb=document.getElementById("chqBox");
+  if(cb){
+    var chqToday=colTotal("cheques","amount");
+    var chqWait=chqByState("wait",true), chqWaitTot=chqSum(chqWait);
+    var chqBad =chqByState("bad", true), chqBadTot =chqSum(chqBad);
+    var cbits=[];
+    if(chqToday>0)   cbits.push("Cheques written down today: <b>"+money(chqToday)+" "+C+"</b>");
+    if(chqWait.length) cbits.push("Still waiting for the money: <b>"+money(chqWaitTot)+" "+C+
+                                  "</b> in "+chqWait.length+" cheque"+(chqWait.length===1?"":"s"));
+    if(chqBad.length)  cbits.push("Returned unpaid: <b>"+money(chqBadTot)+" "+C+"</b> in "+
+                                  chqBad.length+" cheque"+(chqBad.length===1?"":"s"));
+    var chqOld="";
+    for(var ci=0;ci<chqWait.length;ci++){
+      if(chqWait[ci].iso===sel) continue;              /* the ones on screen are right above */
+      var cr=chqWait[ci].r, cwait=diffDays(chqWait[ci].iso,sel);
+      chqOld+="<br>&nbsp;&nbsp;&bull; Day "+chqWait[ci].day+", "+shortDate(chqWait[ci].iso)+" &mdash; "+
+              (has(cr.who)?esc(cr.who):"no name")+
+              (has(cr.ref)?", cheque "+esc(cr.ref):"")+
+              (has(cr.bank)?", "+esc(cr.bank):"")+" &mdash; <b>"+money(num(cr.amount))+" "+C+"</b>"+
+              (cwait>0?" ("+cwait+" day"+(cwait===1?"":"s")+" waiting)":"");
+    }
+    if(chqOld) chqOld="<br><b>Waiting from earlier days</b> &mdash; open that day to mark it Arrived:"+chqOld;
+    cb.innerHTML = cbits.length
+      ? '<div class="note'+(chqBad.length?" red":" blue")+'">'+cbits.join(" &nbsp;&bull;&nbsp; ")+
+        "<br>A cheque is already counted in <b>Money in</b> on the day it was handed over. "+
+        "This list only records whether the money behind it has actually arrived."+chqOld+"</div>"
+      : "";
+  }
+
+  /* problems — how many, what they cost, and which ones need the owner */
+  var ab=document.getElementById("askBox");
+  if(ab){
+    var prows=LSTATE.probs||[], pn=0, pcost=colTotal("probs","cost"), asks=[], pi;
+    for(pi=0;pi<prows.length;pi++){
+      if(!rowFilled(prows[pi])) continue;
+      pn++;
+      if(String(prows[pi].decide||"").trim()!=="Yes") continue;
+      asks.push(has(prows[pi].ask) ? String(prows[pi].ask)
+                                   : (has(prows[pi].what) ? String(prows[pi].what) : "line "+pn));
+    }
+    /* the Yes/No box follows the lines until a choice is made by hand */
+    var dsel=document.getElementById("f_decision"), dhelp=document.getElementById("decHelp");
+    if(dsel && asks.length && !has(dsel.value)){
+      dsel.value="Yes"; collectDay();
+      if(dhelp) dhelp.textContent="Set to Yes by the lines above";
+    } else if(dhelp){
+      dhelp.textContent = asks.length ? "There are "+asks.length+" above as well"
+                                      : "Fills itself from the lines above";
+    }
+    var pbits=[];
+    if(pn) pbits.push(pn+" problem"+(pn===1?"":"s")+" written down today");
+    if(pcost>0) pbits.push("Cost so far: <b>"+money(pcost)+" "+C+"</b>");
+    var alist="";
+    for(var qi=0;qi<asks.length;qi++)
+      alist+="<br>&nbsp;&nbsp;&bull; "+esc(asks[qi]);
+    if(asks.length)
+      pbits.push("<b>"+asks.length+" need"+(asks.length===1?"s":"")+" "+
+                 esc(S.owner||"the owner")+"&rsquo;s decision</b>");
+    ab.innerHTML = pbits.length
+      ? '<div class="note blue">'+pbits.join(" &nbsp;&bull;&nbsp; ")+alist+"</div>" : "";
+  }
+
   /* machine time lost */
   var sb=document.getElementById("staffBox");
   if(sb){
@@ -2121,7 +2366,8 @@ function renderHistory(){
        '<td class="n">'+(d&&has(d.damaged)?area(num(d.damaged)):"")+"</td>"+
        '<td class="n">'+(d&&has(d.revenue)?fmt(num(d.revenue)):"")+"</td>"+
        '<td class="n">'+(d&&filled(d)?fmt(c.profit):"")+"</td>"+
-       '<td class="c">'+(d&&d.decision==="Yes"?'<span class="pill warn">Yes</span>':"")+"</td>"+
+       '<td class="c">'+(function(){ var n=askList(d).length;
+          return n ? '<span class="pill warn">'+(n>1?n:"Yes")+"</span>" : ""; })()+"</td>"+
        '<td class="c">'+on+"</td>"+
        "<td>"+esc(((d&&d.problems)||"").slice(0,60))+"</td></tr>";
   }
@@ -2167,6 +2413,13 @@ function renderDash(){
           t.sold-t.delivered>0 ? "bad" : (t.delivered>0 ? "good" : ""));
   h+=card("Damage rate", t.produced>0?dmg.toFixed(1)+"%":"—", areaU(t.damaged)+" damaged",
           dmg>0 && dmg<=3 ? "good" : dmg>7 ? "bad" : "");
+  /* cheques taken in that have not yet turned into money */
+  var chqW=chqByState("wait",false), chqB=chqByState("bad",false), chqI=chqByState("in",false);
+  h+=card("Cheques waiting", chqW.length?money(chqSum(chqW)):"—",
+          chqW.length ? chqW.length+" cheque"+(chqW.length===1?"":"s")+" not yet in the bank"
+            : (chqB.length ? money(chqSum(chqB))+" returned unpaid"
+            : (chqI.length ? "Every cheque came good" : "No cheques taken in")),
+          chqW.length||chqB.length ? "bad" : (chqI.length?"good":""));
   document.getElementById("kpiCards").innerHTML=h;
 
   var done=t.reported, pct=Math.round(done/30*100);
@@ -2174,7 +2427,8 @@ function renderDash(){
     '<div style="display:flex;justify-content:space-between;font-size:13px">'+
     "<span><b>"+done+" of 30 days</b> entered</span>"+
     "<span><b>"+t.onTime+"</b> reports sent on time &nbsp;&bull;&nbsp; <b>"+
-    t.decisions+"</b> days needed "+esc(S.owner||"the owner")+"&rsquo;s decision</span></div>"+
+    t.asks+"</b> decision"+(t.asks===1?"":"s")+" asked of "+esc(S.owner||"the owner")+
+    " over "+t.decisions+" day"+(t.decisions===1?"":"s")+"</span></div>"+
     '<div class="bar"><i style="width:'+pct+'%"></i></div>';
 
   /* KPI table */
@@ -2645,8 +2899,9 @@ function execSummary(t,startCash,U,C){
   if(owed>0.05) s.push("<b>"+area(owed)+" "+U+" remains undelivered</b> — work that is sold but still in the factory.");
   if(t.produced>0) s.push("Damage ran at <b>"+(t.damaged/t.produced*100).toFixed(1)+"%</b> ("+
                           area(t.damaged)+" "+U+").");
-  if(t.decisions>0) s.push("The owner was asked to decide on "+t.decisions+
-                           (t.decisions===1?" occasion":" occasions")+"; these are listed in section 7.");
+  if(t.decisions>0) s.push("The owner was asked for "+t.asks+
+                           (t.asks===1?" decision on ":" decisions across ")+t.decisions+
+                           (t.decisions===1?" day":" days")+"; these are listed in section 7.");
   return s.join(" ");
 }
 function statusChip(s){
@@ -2709,6 +2964,39 @@ function repList(d,key,emptyMsg){
   }
   return h+"</tbody></table>";
 }
+/* ---- every cheque still waiting for its money, printed ----
+   `asOf` is the last day the report covers: cheques handed over after it are
+   left out, and it is what "days waiting" is counted against. */
+function chqPendTable(asOf){
+  var pend=chqByState("wait",false,asOf);
+  if(!pend.length) return "";
+  var C=esc(cur()), RA=' style="text-align:right"', tot=0;
+  var h='<table><thead><tr><th style="width:26pt">Day</th><th style="width:52pt">Received</th>'+
+        "<th>Who gave it</th><th>Cheque no.</th><th>Bank</th>"+
+        "<th"+RA+">Amount ("+C+")</th>"+
+        '<th style="width:56pt">Date on it</th>'+
+        "<th"+RA+">Days waiting</th><th>Note</th></tr></thead><tbody>";
+  for(var i=0;i<pend.length;i++){
+    var p=pend[i], r=p.r, amt=num(r.amount), w=asOf?diffDays(p.iso,asOf):0;
+    tot+=amt;
+    h+="<tr><td>"+p.day+"</td><td>"+shortDate(p.iso)+"</td>"+
+       "<td>"+(has(r.who)?esc(r.who):'<span class="muted">—</span>')+"</td>"+
+       "<td>"+(has(r.ref)?esc(r.ref):'<span class="muted">—</span>')+"</td>"+
+       "<td>"+(has(r.bank)?mark(r.bank,true)+esc(r.bank):'<span class="muted">—</span>')+"</td>"+
+       "<td"+RA+">"+money(amt)+"</td>"+
+       "<td>"+(has(r.due)?shortDate(r.due):'<span class="muted">—</span>')+"</td>"+
+       "<td"+RA+">"+(asOf&&w>0?w:"—")+"</td>"+
+       "<td>"+(has(r.note)?esc(r.note):'<span class="muted">—</span>')+"</td></tr>";
+  }
+  h+='<tr class="tot"><td colspan="5">TOTAL STILL WAITING</td><td'+RA+">"+money(tot)+
+     '</td><td colspan="3"></td></tr></tbody></table>';
+  return h;
+}
+/* the sentence that goes under any printed cheque table */
+var CHQNOTE = '<div class="lede">A cheque is counted in the money received on the day it was '+
+  "handed over. The cheques below are the ones whose money has not yet been confirmed in the "+
+  "bank &mdash; the client still has to pay it in.</div>";
+
 /* cash rows split by whether they moved banknotes or not */
 function sumWay(d,key,wantCash){
   var rows=liveRows(d,key), s=0;
@@ -2728,6 +3016,26 @@ function tieNote(cashPart,bankPart,head,noun,isArea){
       money(bankPart)+"</b> moved through a bank, cheque or telebirr."
     : "All of it moved through a bank, cheque or telebirr &mdash; none of it was banknotes.")+
     "</div>";
+}
+
+/* the remark written at the foot of one card, printed under its own section */
+function remLine(d,key){
+  return has(d[key]) ? '<div class="blockq"><b>Remark:</b> '+nl(d[key])+"</div>" : "";
+}
+/* every remark of a range of days, section by section. "" when nobody wrote one. */
+function remarkLog(from,to){
+  var h='<table><thead><tr><th style="width:34pt">Day</th><th style="width:52pt">Date</th>'+
+        '<th style="width:22%">Section</th><th>Remark</th></tr></thead><tbody>', any=false;
+  for(var i=from;i<=to;i++){
+    var iso=dayISO(i), d=getDay(iso); if(!d) continue;
+    for(var k=0;k<REMARKS.length;k++){
+      if(!has(d[REMARKS[k].k])) continue;
+      any=true;
+      h+="<tr><td>"+i+"</td><td>"+shortDate(iso)+"</td><td>"+REMARKS[k].sec+"</td><td>"+
+         nl(d[REMARKS[k].k])+"</td></tr>";
+    }
+  }
+  return any ? h+"</tbody></table>" : "";
 }
 
 /* ---- daily ---- */
@@ -2765,13 +3073,31 @@ function printDaily(iso){
 
   h+=sec("Every payment made")+
      repList(d,"cashOut","No money was paid out today.")+
-     tieNote(sumWay(d,"cashOut",true), sumWay(d,"cashOut",false), num(d.paid), "money paid", false);
+     tieNote(sumWay(d,"cashOut",true), sumWay(d,"cashOut",false), num(d.paid), "money paid", false)+
+     remLine(d,"remMoney");
+
+  /* ---------- cheques ---------- */
+  var chqShown=false;
+  if(liveRows(d,"cheques").length){
+    h+=sec("Cheques taken in today")+repList(d,"cheques"); chqShown=true;
+  }
+  var dPend=chqPendTable(iso), dBad=chqByState("bad",false,iso);
+  if(dPend){ h+=sec("Cheques still waiting for the money")+CHQNOTE+dPend; chqShown=true; }
+  if(dBad.length){
+    var badTot=chqSum(dBad);
+    h+='<div class="blockq warn"><b>'+money(badTot)+" "+C+" of cheques came back unpaid.</b> "+
+       "That money was counted as received but never reached the bank.</div>";
+    chqShown=true;
+  }
+  /* a remark on a section that printed nothing still needs its own heading */
+  if(has(d.remCheques)) h+=(chqShown?"":sec("Cheques received"))+remLine(d,"remCheques");
 
   /* ---------- loan repayment ---------- */
-  var xferTot=sumRows(d,"transfers","amount");
+  var xferTot=sumRows(d,"transfers","amount"), loanShown=false;
   var repaid=sumRows(d,"loans","amount"), intr=sumRows(d,"loans","interest"),
       leftToPay=sumRows(d,"loans","balance");
   if(repaid>0||leftToPay>0||liveRows(d,"loans").length){
+    loanShown=true;
     h+=sec("Loan repayment")+
        '<div class="pgrid">'+
        box("Paid back today ("+C+")",money(repaid))+
@@ -2788,7 +3114,9 @@ function printDaily(iso){
        '<div class="lede">These moved <b>'+money(xferTot)+" "+C+
        "</b> between accounts. It is the same money in a different place — neither income "+
        "nor expense, and never part of the cash count.</div>";
+    loanShown=true;
   }
+  if(has(d.remLoans)) h+=(loanShown?"":sec("Loan repayment"))+remLine(d,"remLoans");
 
   /* where the money sits — the safe and every bank on its own */
   var av=acctRange(iso,iso,false);
@@ -2838,11 +3166,12 @@ function printDaily(iso){
   } else {
     h+='<div class="lede">No damage recorded today.</div>';
   }
+  h+=remLine(d,"remProd");
 
   /* ---------- machines and materials ---------- */
-  var lostH=sumRows(d,"downtime","hours");
+  var lostH=sumRows(d,"downtime","hours"), machShown=false;
   if(lostH||liveRows(d,"downtime").length||liveRows(d,"materials").length){
-    h+=sec("Machines and materials");
+    h+=sec("Machines and materials"); machShown=true;
     if(liveRows(d,"downtime").length){
       h+='<div class="runhead"><b>Machine stoppages — '+area(lostH)+" hours lost</b></div>"+
          repList(d,"downtime");
@@ -2851,28 +3180,57 @@ function printDaily(iso){
       h+='<div class="runhead"><b>Materials used and bought</b></div>'+repList(d,"materials");
     }
   }
+  if(has(d.remMach)) h+=(machShown?"":sec("Machines and materials"))+remLine(d,"remMach");
 
   h+=sec("Problems and fixes");
+  var probRows=liveRows(d,"probs");
+  if(probRows.length){
+    h+=repList(d,"probs");
+    var pCost=sumRows(d,"probs","cost");
+    if(pCost>0)
+      h+='<div class="lede">These problems cost <b>'+money(pCost)+" "+C+
+         "</b> between them today.</div>";
+  }
   if(has(d.problems)||has(d.fix)){
-    h+='<table><thead><tr><th style="width:50%">What went wrong</th>'+
+    h+=(probRows.length?'<div class="runhead"><b>The day in a sentence</b></div>':"")+
+       '<table><thead><tr><th style="width:50%">What went wrong</th>'+
        "<th>What will be done about it</th></tr></thead><tbody><tr><td>"+
        (has(d.problems)?nl(d.problems):"—")+"</td><td>"+(has(d.fix)?nl(d.fix):"—")+
        "</td></tr></tbody></table>";
+  } else if(probRows.length){
+    /* the lines above already say it */
   } else if(has(d.evening)&&Math.abs(c.variance)>0.5){
     h+='<div class="blockq warn"><b>No problem was written down, yet the cash did not balance.</b> '+
        "A cash difference is always a problem and must be reported the same day.</div>";
   } else {
     h+='<div class="lede">No problems reported today.</div>';
   }
-  h+=sec("Decision needed from "+esc(S.owner||"the owner"))+
-     (d.decision==="Yes"
-       ? '<div class="blockq"><b>Decision required.</b> '+
-         (has(d.decisionWhat)?nl(d.decisionWhat):"See the problems above.")+"</div>"
-       : '<div class="lede">None — no decision is needed from '+esc(S.owner||"the owner")+" today.</div>");
+  /* a day can ask the owner for several decisions — every one is listed */
+  var asks=askList(d);
+  h+=sec("Decisions needed from "+esc(S.owner||"the owner"));
+  if(asks.length===1){
+    h+='<div class="blockq"><b>Decision required.</b> '+nl(asks[0])+"</div>";
+  } else if(asks.length>1){
+    h+='<div class="lede"><b>'+asks.length+" decisions are needed from "+
+       esc(S.owner||"the owner")+" today.</b></div>"+
+       '<table><thead><tr><th style="width:26pt">#</th><th>What must be decided</th>'+
+       "</tr></thead><tbody>";
+    for(var qq=0;qq<asks.length;qq++)
+      h+="<tr><td>"+(qq+1)+"</td><td>"+nl(asks[qq])+"</td></tr>";
+    h+="</tbody></table>";
+  } else {
+    h+='<div class="lede">None — no decision is needed from '+esc(S.owner||"the owner")+" today.</div>";
+  }
+  h+=remLine(d,"remProb");
+  /* whatever the boxes had no place for, printed word for word */
+  if(has(d.notes))
+    h+=sec("Anything else")+'<div class="lede">'+nl(d.notes)+"</div>";
+
   h+=sec("Tomorrow&rsquo;s top 3 priorities")+
      '<table><tbody><tr><td style="width:22pt">1</td><td>'+(has(d.p1)?esc(d.p1):"—")+"</td></tr>"+
      '<tr><td>2</td><td>'+(has(d.p2)?esc(d.p2):"—")+"</td></tr>"+
-     '<tr><td>3</td><td>'+(has(d.p3)?esc(d.p3):"—")+"</td></tr></tbody></table>";
+     '<tr><td>3</td><td>'+(has(d.p3)?esc(d.p3):"—")+"</td></tr></tbody></table>"+
+     remLine(d,"remPrior");
   /* the daily report shows this day only — nothing is carried in from earlier days */
   h+='<div class="lede">This report was sent on time: <b>'+
      (has(d.ontime)?esc(d.ontime):"—")+"</b></div>";
@@ -3056,6 +3414,11 @@ function printWeek(w){
          "Only "+money(wRepaid-wInt)+" "+C+" actually reduced the debt.</div>";
   }
 
+  if(rangeRows(r[0],r[1],"cheques").length)
+    h+="<h3>Cheques taken in this week</h3>"+rangeList(r[0],r[1],"cheques");
+  var wPend=chqPendTable(dayISO(r[1]));
+  if(wPend) h+='<h3 class="pb">Cheques still waiting for the money</h3>'+CHQNOTE+wPend;
+
   if(rangeRows(r[0],r[1],"transfers").length){
     h+="<h3>Bank to bank transfers</h3>"+rangeList(r[0],r[1],"transfers")+
        '<div class="lede">Transfers move money between accounts. They are neither income '+
@@ -3100,6 +3463,10 @@ function printWeek(w){
     : '<div class="lede">The counted cash matched the books on every day of this week.</div>';
 
   h+='<h3 class="pb">Problem log</h3>'+problemLog(r[0],r[1]);
+  var wRem=remarkLog(r[0],r[1]);
+  if(wRem) h+="<h3>Remarks, section by section</h3>"+wRem;
+  var wNotes=noteLog(r[0],r[1]);
+  if(wNotes) h+="<h3>Anything else, day by day</h3>"+wNotes;
   var mt=null;
   for(var m=0;m<S.meetings.length;m++){ if(weekOf(S.meetings[m].day)===w) mt=S.meetings[m]; }
   if(mt && (has(mt.decisions)||has(mt.actions))){
@@ -3205,6 +3572,19 @@ function printFull(){
                           groupTable(gotFrom,"Received from","Amount ("+C+")",false,20);
   }
 
+  /* ---- cheques taken in over the trial, and what became of them ---- */
+  var fWait=chqByState("wait",false), fIn=chqByState("in",false), fBad=chqByState("bad",false);
+  if(fWait.length||fIn.length||fBad.length){
+    h+="<h3>8. Cheques taken in and whether the money came</h3>"+
+       '<div class="pgrid">'+
+       box("Money arrived ("+C+")",money(chqSum(fIn)))+
+       box("Still waiting ("+C+")",money(chqSum(fWait)),fWait.length>0)+
+       box("Returned unpaid ("+C+")",money(chqSum(fBad)),fBad.length>0)+"</div>"+
+       rangeList(1,30,"cheques");
+    var fPend=chqPendTable(dayISO(30));
+    if(fPend) h+='<div class="lede"><b>Not yet in the bank on the last day of the trial:</b></div>'+fPend;
+  }
+
   /* every cash difference over the 30 days, and whether it was ever explained */
   var vh="", vany=false, vtot=0, vun=0;
   for(var vi=1;vi<=30;vi++){
@@ -3217,7 +3597,7 @@ function printFull(){
         (vc.variance>0?"+":"−")+money(Math.abs(vc.variance))+"</td><td>"+
         (has(vd.varReason)?nl(vd.varReason):'<span class="muted">no note</span>')+"</td></tr>";
   }
-  h+="<h3>8. Cash differences and how they were explained</h3>";
+  h+="<h3>9. Cash differences and how they were explained</h3>";
   h+= vany
     ? '<table><thead><tr><th style="width:26pt">Day</th><th style="width:52pt">Date</th>'+
       '<th style="text-align:right;width:74pt">Difference ('+C+')</th><th>Reason given</th>'+
@@ -3228,16 +3608,22 @@ function printFull(){
     : '<div class="lede">The counted cash matched the books on every day of the trial.</div>';
 
   var dmgCause=groupSum(1,30,"damages","cause","qty");
-  if(dmgCause.length) h+="<h3>9. Why work was damaged</h3>"+
+  if(dmgCause.length) h+="<h3>10. Why work was damaged</h3>"+
                          groupTable(dmgCause,"Cause","Area ("+U+")",true,15);
   var stopBy=groupSum(1,30,"downtime","machine","hours");
-  if(stopBy.length) h+="<h3>10. Machine stoppages</h3>"+
+  if(stopBy.length) h+="<h3>11. Machine stoppages</h3>"+
                        groupTable(stopBy,"Machine","Hours lost",true,15);
 
   h+='<div class="pb"></div>'+runHead("Final report — "+period)+
-     "<h3>11. Problem log</h3>"+problemLog(1,30);
-  h+="<h3>12. Decisions the owner was asked for</h3>"+decisionLog();
-  h+="<h3>13. Sign-off</h3>"+
+     "<h3>12. Problem log</h3>"+problemLog(1,30);
+  h+="<h3>13. Decisions the owner was asked for</h3>"+decisionLog();
+  /* the tail sections number themselves, so an empty one never leaves a gap */
+  var tailN=13;
+  var fRem=remarkLog(1,30);
+  if(fRem) h+="<h3>"+(++tailN)+". Remarks, section by section</h3>"+fRem;
+  var fNotes=noteLog(1,30);
+  if(fNotes) h+="<h3>"+(++tailN)+". Anything else, day by day</h3>"+fNotes;
+  h+="<h3>"+(++tailN)+". Sign-off</h3>"+
      '<div class="lede">This report covers the full 30-day trial period agreed between '+
      esc(gmName())+" and "+esc(S.owner||"the owner")+", from "+fmtDate(dayISO(1))+" to "+
      fmtDate(dayISO(30))+". The figures above are taken from the daily records kept "+
@@ -3263,7 +3649,8 @@ function dayTable(from,to){
        R+money(num(d.received))+"</td>"+R+money(num(d.paid))+"</td>"+R+money(c.evening)+"</td>"+
        R+area(num(d.produced))+"</td>"+R+area(num(d.sold))+"</td>"+R+area(num(d.delivered))+"</td>"+
        R+area(num(d.damaged))+"</td>"+R+money(num(d.revenue))+"</td>"+R+money(c.profit)+"</td>"+
-       Cc+(d.decision==="Yes"?"Yes":"")+"</td>"+Cc+esc(d.ontime||"")+"</td></tr>";
+       Cc+(function(){ var n=askList(d).length; return n?(n>1?n:"Yes"):""; })()+"</td>"+
+       Cc+esc(d.ontime||"")+"</td></tr>";
   }
   var t=totals(from,to);
   h+='<tr class="tot keep"><td colspan="2">TOTAL</td>'+
@@ -3275,29 +3662,64 @@ function dayTable(from,to){
   if(!any) h+="<div><i>No days entered in this range yet.</i></div>";
   return h;
 }
+/* Every problem of a range of days — one row per itemised line, plus the
+   day's overall sentence when one was written. Days entered before the
+   problem list existed only have the sentence, and still print. */
 function problemLog(from,to){
+  var C=esc(cur()), RA=' style="text-align:right"';
   var h='<table><thead><tr><th style="width:34pt">Day</th><th style="width:52pt">Date</th>'+
-        '<th style="width:44%">What went wrong</th><th>What was done about it</th>'+
-        "</tr></thead><tbody>", any=false;
+        '<th style="width:30%">What went wrong</th><th'+RA+' style="width:56pt">Cost ('+C+')</th>'+
+        "<th>What was done about it</th>"+
+        '<th style="width:52pt">By when</th></tr></thead><tbody>', any=false, tot=0;
   for(var i=from;i<=to;i++){
     var iso=dayISO(i), d=getDay(iso); if(!d) continue;
-    if(!has(d.problems) && !has(d.fix)) continue;
-    any=true;
-    h+="<tr><td>"+i+"</td><td>"+shortDate(iso)+"</td><td>"+
-       (has(d.problems)?nl(d.problems):'<span class="muted">—</span>')+"</td><td>"+
-       (has(d.fix)?nl(d.fix):'<span class="muted">—</span>')+"</td></tr>";
+    var rows=liveRows(d,"probs"), j;
+    for(j=0;j<rows.length;j++){
+      var r=rows[j], cost=num(r.cost); tot+=cost; any=true;
+      h+="<tr><td>"+i+"</td><td>"+shortDate(iso)+"</td><td>"+
+         (has(r.what)?esc(r.what):'<span class="muted">—</span>')+"</td>"+
+         "<td"+RA+">"+(cost?money(cost):'<span class="muted">—</span>')+"</td><td>"+
+         (has(r.fix)?esc(r.fix):'<span class="muted">—</span>')+"</td><td>"+
+         (has(r.by)?shortDate(r.by):'<span class="muted">—</span>')+"</td></tr>";
+    }
+    if(has(d.problems)||has(d.fix)){
+      any=true;
+      h+="<tr><td>"+i+"</td><td>"+shortDate(iso)+"</td><td>"+
+         (has(d.problems)?nl(d.problems):'<span class="muted">—</span>')+"</td>"+
+         "<td"+RA+'><span class="muted">—</span></td><td>'+
+         (has(d.fix)?nl(d.fix):'<span class="muted">—</span>')+"</td>"+
+         '<td><span class="muted">the day in a sentence</span></td></tr>';
+    }
   }
+  if(tot>0)
+    h+='<tr class="tot"><td colspan="3">TOTAL COST OF PROBLEMS</td><td'+RA+">"+money(tot)+
+       '</td><td colspan="2"></td></tr>';
   return any ? h+"</tbody></table>"
              : '<div class="lede">No problems were recorded in this period.</div>';
+}
+/* everything written in the free "Anything else" box, day by day.
+   Returns "" when nobody wrote anything, so the section can be skipped whole. */
+function noteLog(from,to){
+  var h='<table><thead><tr><th style="width:34pt">Day</th><th style="width:52pt">Date</th>'+
+        "<th>What was written</th></tr></thead><tbody>", any=false;
+  for(var i=from;i<=to;i++){
+    var iso=dayISO(i), d=getDay(iso); if(!d||!has(d.notes)) continue;
+    any=true;
+    h+="<tr><td>"+i+"</td><td>"+shortDate(iso)+"</td><td>"+nl(d.notes)+"</td></tr>";
+  }
+  return any ? h+"</tbody></table>" : "";
 }
 function decisionLog(){
   var h='<table><thead><tr><th style="width:34pt">Day</th><th style="width:52pt">Date</th>'+
         "<th>What "+esc(S.owner||"the owner")+" was asked to decide</th></tr></thead><tbody>", any=false;
   for(var i=1;i<=30;i++){
-    var iso=dayISO(i), d=getDay(iso); if(!d||d.decision!=="Yes") continue;
+    var iso=dayISO(i), d=getDay(iso); if(!d) continue;
+    var asks=askList(d); if(!asks.length) continue;
     any=true;
-    h+="<tr><td>"+i+"</td><td>"+shortDate(iso)+"</td><td>"+
-       (has(d.decisionWhat)?nl(d.decisionWhat):nl(d.problems))+"</td></tr>";
+    /* one day can carry several — each gets its own row */
+    for(var q=0;q<asks.length;q++)
+      h+="<tr><td>"+(q===0?i:"")+"</td><td>"+(q===0?shortDate(iso):"")+"</td><td>"+
+         nl(asks[q])+"</td></tr>";
   }
   return any ? h+"</tbody></table>"
              : '<div class="lede">No owner decisions were requested during the trial.</div>';
@@ -3359,9 +3781,11 @@ document.getElementById("btnCsv").onclick=function(){
     "Loan Repaid"+C,"Loan Interest"+C,"Loan Still To Pay"+C,"Bank Transfers"+C,
     prod()+" Made"+U,prod()+" Sold"+U,prod()+" Delivered"+U,"Damaged"+U,
     "Revenue"+C,"Day Profit"+C,"New Orders"+U,"New Order Value"+C,
-    "Machine Hours Lost","Customer & Market Note",
+    "Machine Hours Lost","Customer & Market Note","Anything Else",
+    "Problems Listed","Cost Of Problems"+C,"Decisions Asked",
     "Problems","Proposed Fix","Need Owner Decision","What to decide",
     "Priority 1","Priority 2","Priority 3","Report On Time"];
+  for(var rc=0;rc<REMARKS.length;rc++) cols.push("Remark — "+REMARKS[rc].sec.replace(/&rsquo;/g,"'"));
   var out=[cols.map(csvQuote).join(",")];
   for(var i=1;i<=30;i++){
     var iso=dayISO(i), d=getDay(iso)||blankDay(), c=calc(d), f=filled(d);
@@ -3372,9 +3796,10 @@ document.getElementById("btnCsv").onclick=function(){
       sumRows(d,"loans","balance")||"",sumRows(d,"transfers","amount")||"",
       d.produced,d.sold,d.delivered,d.damaged,d.revenue,f?Math.round(c.profit):"",
       d.ordersNew,d.ordersValue,
-      sumRows(d,"downtime","hours")||"",d.custNote,
+      sumRows(d,"downtime","hours")||"",d.custNote,d.notes,
+      liveRows(d,"probs").length||"",sumRows(d,"probs","cost")||"",askList(d).length||"",
       d.problems,d.fix,d.decision,d.decisionWhat,d.p1,d.p2,d.p3,d.ontime
-    ].map(csvQuote).join(","));
+    ].concat(REMKEYS.map(function(k){ return d[k]||""; })).map(csvQuote).join(","));
   }
   download(safeName(bookName(BK.current)+"-days")+".csv","﻿"+out.join("\r\n"),"text/csv;charset=utf-8");
 };
