@@ -579,15 +579,15 @@ tfoot td{background:#fff6dd; font-weight:700; color:var(--navy)}
         <input class="inp money" id="f_revenue" inputmode="decimal"></label>
     </div>
     <div class="grid g3" style="margin-top:14px">
-      <label class="f"><span id="lbl_ordersNew">New orders taken (m²)</span>
-        <input class="inp money" id="f_ordersNew" inputmode="decimal">
-        <div class="help">What came into the order book today</div></label>
       <label class="f"><span id="lbl_ordersValue">Value of new orders (ETB)</span>
         <input class="inp money" id="f_ordersValue" inputmode="decimal"></label>
       <label class="f"><span>Customer &amp; market notes</span>
         <input class="inp" id="f_custNote" placeholder="Complaint, enquiry, lost order, price pressure"></label>
     </div>
     <div id="prodBox"></div>
+
+    <div class="lst" id="lst_production" style="margin-top:18px"></div>
+    <div id="matchProd"></div>
 
     <div class="lst" id="lst_deliveries" style="margin-top:18px"></div>
     <div id="matchDeliv"></div>
@@ -876,10 +876,10 @@ var KEY = "gm30_tracker_v1";
 
 /* Printed on the gold strip at the top so it is never a guess which copy of the
    page you are looking at — the browser, the phone app, or an old tab. */
-var BUILD = "24";
+var BUILD = "25";
 
 /* the repeating line-item lists carried on every day */
-var LISTKEYS = ["cashIn","cashOut","cheques","loans","transfers","deliveries","damages",
+var LISTKEYS = ["cashIn","cashOut","cheques","loans","transfers","production","deliveries","damages",
                 "downtime","materials","probs"];
 
 /* The free remark box that sits at the foot of every card on the entry page.
@@ -903,7 +903,7 @@ function blankDay(){
            /* cash control */
            countedBy:"", varReason:"",
            /* order book and notes */
-           ordersNew:"", ordersValue:"", custNote:"",
+           ordersValue:"", custNote:"",
            /* the free page — anything the boxes above have no place for */
            notes:"",
            /* morning and evening balance counted bank by bank */
@@ -1230,7 +1230,6 @@ function applyLabels(){
   document.getElementById("lbl_delivered").textContent = prod()+" delivered"+U;
   document.getElementById("lbl_damaged").textContent   = "Damaged"+U;
   document.getElementById("lbl_revenue").textContent   = "Revenue ("+cur()+")";
-  document.getElementById("lbl_ordersNew").textContent   = "New orders taken"+U;
   document.getElementById("lbl_ordersValue").textContent = "Value of new orders ("+cur()+")";
   document.getElementById("lbl_wkTarget").textContent  = "Weekly profit target ("+cur()+")";
   document.getElementById("lbl_lastMonth").textContent = "Last month’s profit ("+cur()+")";
@@ -1246,7 +1245,7 @@ function filled(d){
   var keys=["morning","received","paid","evening","sold","delivered","revenue","produced",
             "damaged","problems","fix","p1","ontime",
             "countedBy","varReason",
-            "ordersNew","ordersValue","custNote","notes"].concat(REMKEYS);
+            "ordersValue","custNote","notes"].concat(REMKEYS);
   for(var i=0;i<keys.length;i++){ if(has(d[keys[i]])) return true; }
   for(var j=0;j<LISTKEYS.length;j++){ if(liveRows(d,LISTKEYS[j]).length) return true; }
   /* a day where only the bank balances were counted still counts as entered */
@@ -1321,7 +1320,7 @@ var sel = todayISO();
 var F = ["morning","received","paid","evening","sold","delivered","revenue","produced","damaged",
          "problems","fix","decision","decisionWhat","p1","p2","p3","ontime",
          "countedBy","varReason",
-         "ordersNew","ordersValue","custNote","notes"].concat(REMKEYS);
+         "ordersValue","custNote","notes"].concat(REMKEYS);
 
 /* =========================================================
    line-item lists — the detail behind every headline number
@@ -1768,6 +1767,20 @@ var LISTS = {
       {k:"reason", l:"Reason",      t:"text", ph:"Why the money was moved", w:"150pt"}
     ]
   },
+  production:{
+    title:"Made today — one line per project",
+    why:"Several projects can be made in one day. Each line ties the area made to its KK or RBT code, "+
+        "and the box above adds itself up from these lines.",
+    add:"+ Add a production line",
+    cols:[
+      {k:"ctype", l:"Code type",     t:"sel",  opts:CODETYPES, w:"92pt"},
+      {k:"code",  l:"Code / name",   t:"text", ph:"Code or name", w:"110pt",
+                  asks:"ctype", askMap:CODEASK},
+      {k:"what",  l:"What was made", t:"text", ph:"Cabinet, wardrobe, part", w:"150pt"},
+      {k:"qty",   l:"Area",          t:"num",  total:true, w:"80pt"},
+      {k:"note",  l:"Note",          t:"text", ph:"Stage, finish, remark", w:"130pt"}
+    ]
+  },
   deliveries:{
     title:"Deliveries made today",
     why:"Nothing is delivered until someone signs for it.",
@@ -1986,6 +1999,8 @@ function refreshChecks(){
   showMatch("matchOut", cashByWay("cashOut",true), cashByWay("cashOut",false),
             fval("f_paid"),     "money paid",     false,
             "Add a line for each payment made — who was paid, how much, and the voucher number");
+  showMatch("matchProd", colTotal("production","qty"), 0, fval("f_produced"), "made total", true,
+            "Add a line for each project made — its code and the area produced");
   showMatch("matchDeliv", colTotal("deliveries","qty"), 0, fval("f_delivered"), "delivered total", true,
             "Add a line for each delivery — the customer and who signed for it");
   showMatch("matchDmg",   colTotal("damages","qty"),    0, fval("f_damaged"),   "damaged total",   true,
@@ -2216,6 +2231,7 @@ function autoFill(fieldId,total,helpId,noun,source){
   return changed;
 }
 var AUTOPAIRS = [["f_received","cashIn","amount"],["f_paid","cashOut","amount"],
+                 ["f_produced","production","qty"],
                  ["f_delivered","deliveries","qty"],["f_damaged","damages","qty"]];
 /* the two balance boxes at the top add up the banks below them */
 function acctHeadTotals(){
@@ -2246,6 +2262,7 @@ function autoHeaders(){
   var ch=false;
   ch=autoHeader("f_received","cashIn","amount","recHelp","Safe and bank together")||ch;
   ch=autoHeader("f_paid","cashOut","amount","paidHelp","Safe and bank together")||ch;
+  ch=autoHeader("f_produced","production","qty")||ch;
   ch=autoHeader("f_delivered","deliveries","qty")||ch;
   ch=autoHeader("f_damaged","damages","qty")||ch;
   /* once any bank balance is written down, the box above follows their total */
@@ -3146,11 +3163,16 @@ function printDaily(iso){
      box("Damaged ("+U+")",area(num(d.damaged))+(num(d.produced)>0?" ("+c.dmgRate.toFixed(1)+"%)":""),
          c.dmgRate>5)+
      box("Waiting to deliver ("+U+")",area(num(d.sold)-num(d.delivered)))+
-     box("New orders taken ("+U+")",area(num(d.ordersNew)))+
      box("Value of new orders ("+C+")",money(num(d.ordersValue)))+
      "</div>";
   if(has(d.custNote))
     h+='<div class="lede"><b>Customer and market note:</b> '+nl(d.custNote)+"</div>";
+
+  if(liveRows(d,"production").length){
+    h+=sec("Made today — by project")+
+       repList(d,"production")+
+       tieNote(sumRows(d,"production","qty"), 0, num(d.produced), "made total", true);
+  }
 
   h+=sec("Deliveries made")+
      repList(d,"deliveries","No deliveries were made today.")+
@@ -3780,7 +3802,7 @@ document.getElementById("btnCsv").onclick=function(){
     "Expected Evening Cash","Cash Difference","Reason for Difference","Counted With",
     "Loan Repaid"+C,"Loan Interest"+C,"Loan Still To Pay"+C,"Bank Transfers"+C,
     prod()+" Made"+U,prod()+" Sold"+U,prod()+" Delivered"+U,"Damaged"+U,
-    "Revenue"+C,"Day Profit"+C,"New Orders"+U,"New Order Value"+C,
+    "Revenue"+C,"Day Profit"+C,"New Order Value"+C,
     "Machine Hours Lost","Customer & Market Note","Anything Else",
     "Problems Listed","Cost Of Problems"+C,"Decisions Asked",
     "Problems","Proposed Fix","Need Owner Decision","What to decide",
@@ -3795,7 +3817,7 @@ document.getElementById("btnCsv").onclick=function(){
       sumRows(d,"loans","amount")||"",sumRows(d,"loans","interest")||"",
       sumRows(d,"loans","balance")||"",sumRows(d,"transfers","amount")||"",
       d.produced,d.sold,d.delivered,d.damaged,d.revenue,f?Math.round(c.profit):"",
-      d.ordersNew,d.ordersValue,
+      d.ordersValue,
       sumRows(d,"downtime","hours")||"",d.custNote,d.notes,
       liveRows(d,"probs").length||"",sumRows(d,"probs","cost")||"",askList(d).length||"",
       d.problems,d.fix,d.decision,d.decisionWhat,d.p1,d.p2,d.p3,d.ontime
