@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#1f3864">
 <meta name="color-scheme" content="light">
 <meta name="mobile-web-app-capable" content="yes">
-<title>GM 30-Day Trial Tracker</title>
+<title>GM 60-Day Trial Tracker</title>
 <style id="pageStyle">@page { size: A4 portrait; margin: 14mm; }</style>
 <style>
 :root{
@@ -445,7 +445,7 @@ tfoot td{background:#fff6dd; font-weight:700; color:var(--navy)}
 
 <header class="top">
   <div>
-    <h1>GM 30-Day Trial Tracker</h1>
+    <h1>GM 60-Day Trial Tracker</h1>
     <div class="sub">Enter the day&rsquo;s numbers &mdash; the reports build themselves</div>
   </div>
   <div class="top-right">
@@ -461,7 +461,7 @@ tfoot td{background:#fff6dd; font-weight:700; color:var(--navy)}
 
 <nav class="tabs" id="tabs">
   <button data-t="today" class="on">Daily Entry</button>
-  <button data-t="history">All 30 Days</button>
+  <button data-t="history">All 60 Days</button>
   <button data-t="dash">Dashboard</button>
   <button data-t="targets">Weekly Targets</button>
   <button data-t="meet">Checkpoints</button>
@@ -481,7 +481,7 @@ tfoot td{background:#fff6dd; font-weight:700; color:var(--navy)}
         <input type="date" class="inp" id="dDate">
       </label>
       <div style="padding-bottom:2px">
-        <span class="pill grey" id="dBadge">Day &mdash; of 30</span>
+        <span class="pill grey" id="dBadge">Day &mdash; of 60</span>
         <span id="dStatus"></span>
       </div>
       <div style="margin-left:auto; padding-bottom:2px">
@@ -535,6 +535,16 @@ tfoot td{background:#fff6dd; font-weight:700; color:var(--navy)}
 
     <div class="lst" id="lst_cashOut" style="margin-top:20px"></div>
     <div id="matchOut"></div>
+
+    <div style="border-top:1px dashed var(--line); margin-top:26px; padding-top:16px">
+      <b style="font-size:13px; color:var(--navy); text-transform:uppercase; letter-spacing:.05em">Tomorrow&rsquo;s plan</b>
+      <div class="help">What you expect to come in and go out <b>tomorrow</b>. It is a plan &mdash;
+        it changes no balance and no total for today. Tomorrow you can see whether it held.</div>
+    </div>
+
+    <div class="lst" id="lst_planIn" style="margin-top:14px"></div>
+    <div class="lst" id="lst_planOut" style="margin-top:20px"></div>
+    <div id="planBox"></div>
 
     <label class="f rem"><span>Remark</span>
       <textarea class="inp" id="f_remMoney"
@@ -601,7 +611,54 @@ tfoot td{background:#fff6dd; font-weight:700; color:var(--navy)}
   </div>
 
   <div class="card">
-    <h2>5 &bull; Machines &amp; materials</h2>
+    <h2>5 &bull; Commercial &amp; operation
+      <span class="hint">Ephrata&rsquo;s sheet &mdash; only what the cards above do not already ask</span></h2>
+    <div class="grid g4">
+      <label class="f"><span>Leads</span>
+        <input class="inp money" id="f_leads" inputmode="numeric"></label>
+      <label class="f"><span>Site visits</span>
+        <input class="inp money" id="f_visits" inputmode="numeric"></label>
+      <label class="f"><span>Quotations</span>
+        <input class="inp money" id="f_quotes" inputmode="numeric"></label>
+      <label class="f"><span>Contracts</span>
+        <input class="inp money" id="f_contracts" inputmode="numeric"></label>
+    </div>
+    <div class="grid g4" style="margin-top:14px">
+      <label class="f"><span id="lbl_marginExt">External margin (per m&sup2;)</span>
+        <input class="inp money" id="f_marginExt" inputmode="decimal"></label>
+      <label class="f"><span id="lbl_marginRov">Rovestone margin (per m&sup2;)</span>
+        <input class="inp money" id="f_marginRov" inputmode="decimal"></label>
+      <label class="f"><span id="lbl_waste">Waste (m&sup2;)</span>
+        <input class="inp money" id="f_waste" inputmode="decimal"></label>
+      <label class="f"><span>Stock shortage</span>
+        <select class="inp" id="f_stockShort">
+          <option value=""></option><option>No</option><option>Yes</option></select></label>
+    </div>
+    <div class="grid g4" style="margin-top:14px">
+      <label class="f"><span>Jobs delivered</span>
+        <input class="inp money" id="f_jobsDel" inputmode="numeric"></label>
+      <label class="f"><span>Jobs installed</span>
+        <input class="inp money" id="f_jobsInst" inputmode="numeric"></label>
+      <label class="f"><span id="lbl_m2Inst">Installed (m&sup2;)</span>
+        <input class="inp money" id="f_m2Inst" inputmode="decimal"></label>
+      <label class="f"><span>Complaints</span>
+        <input class="inp money" id="f_complaints" inputmode="numeric"></label>
+    </div>
+    <div class="grid g3" style="margin-top:14px">
+      <label class="f"><span>Complaints resolved</span>
+        <input class="inp money" id="f_resolved" inputmode="numeric"></label>
+      <label class="f" style="grid-column:span 2"><span>What ran short</span>
+        <input class="inp" id="f_stockWhat" placeholder="only if there was a shortage"></label>
+    </div>
+    <div id="klvBox"></div>
+
+    <label class="f rem"><span>Remark</span>
+      <textarea class="inp" id="f_remKlv"
+        placeholder="Anything about selling, delivery or fitting — a lead gone cold, a customer who would not accept the work."></textarea></label>
+  </div>
+
+  <div class="card">
+    <h2>6 &bull; Machines &amp; materials</h2>
     <div id="staffBox"></div>
 
     <div class="lst" id="lst_downtime"></div>
@@ -613,7 +670,7 @@ tfoot td{background:#fff6dd; font-weight:700; color:var(--navy)}
   </div>
 
   <div class="card">
-    <h2>6 &bull; Problems &amp; decisions <span class="hint">One line for each problem &mdash; add as many as the day had</span></h2>
+    <h2>7 &bull; Problems &amp; decisions <span class="hint">One line for each problem &mdash; add as many as the day had</span></h2>
     <div class="lst" id="lst_probs"></div>
     <div id="askBox"></div>
 
@@ -644,7 +701,7 @@ tfoot td{background:#fff6dd; font-weight:700; color:var(--navy)}
   </div>
 
   <div class="card">
-    <h2>7 &bull; Anything else <span class="hint">Whatever the boxes above have no place for</span></h2>
+    <h2>8 &bull; Anything else <span class="hint">Whatever the boxes above have no place for</span></h2>
     <label class="f"><span>Write anything else about today</span>
       <textarea class="inp tall" id="f_notes"
         placeholder="Anything at all — a visitor, a phone call, a price change, something a worker said, a promise made to a customer, an idea for tomorrow. Write it in your own words, one thing per line."></textarea>
@@ -652,7 +709,7 @@ tfoot td{background:#fff6dd; font-weight:700; color:var(--navy)}
   </div>
 
   <div class="card">
-    <h2>8 &bull; Tomorrow&rsquo;s top 3 priorities</h2>
+    <h2>9 &bull; Tomorrow&rsquo;s top 3 priorities</h2>
     <div class="grid g3">
       <label class="f"><span>Priority 1</span><input class="inp" id="f_p1"></label>
       <label class="f"><span>Priority 2</span><input class="inp" id="f_p2"></label>
@@ -679,12 +736,12 @@ tfoot td{background:#fff6dd; font-weight:700; color:var(--navy)}
 <!-- ================= HISTORY ================= -->
 <section class="panel" id="p-history">
   <div class="card">
-    <h2>All 30 days <span class="hint">Click any row to open that day</span></h2>
+    <h2>All 60 days <span class="hint">Click any row to open that day</span></h2>
     <div class="scroll"><table id="histTable"></table></div>
     <div class="row" style="margin-top:14px">
       <button class="btn ghost" id="btnCsv">Export to Excel (CSV)</button>
       <button class="btn ghost" id="btnCsvLines">Export every detail line (CSV)</button>
-      <button class="btn" id="btnPdfAll">Make full 30-day PDF report</button>
+      <button class="btn" id="btnPdfAll">Make full 60-day PDF report</button>
     </div>
   </div>
 </section>
@@ -750,7 +807,7 @@ tfoot td{background:#fff6dd; font-weight:700; color:var(--navy)}
       <b>Headers and footers</b> <b>off</b> &mdash; the report prints its own. Leave margins on Default.
       <br>Fill in the letterhead below first: the company name and your name appear on every page.
     </div>
-    <div class="grid g3" style="margin-top:16px">
+    <div class="grid g4" style="margin-top:16px">
       <div class="card" style="margin:0">
         <h2 style="border:0; padding:0; margin-bottom:8px">Daily report</h2>
         <p class="help" style="margin:0 0 12px">One page for a single day &mdash; cash, output, problems, tomorrow&rsquo;s priorities.</p>
@@ -761,16 +818,24 @@ tfoot td{background:#fff6dd; font-weight:700; color:var(--navy)}
         <h2 style="border:0; padding:0; margin-bottom:8px">Weekly report</h2>
         <p class="help" style="margin:0 0 12px">7 days summarised, targets for that week, and the problem log.</p>
         <select class="inp" id="rWeek" style="margin-bottom:10px">
+          <!-- filled in by fillWeekSelect() so it always matches TRIALDAYS -->
           <option value="1">Week 1 (days 1&ndash;7)</option><option value="2">Week 2 (days 8&ndash;14)</option>
-          <option value="3">Week 3 (days 15&ndash;21)</option><option value="4">Week 4 (days 22&ndash;30)</option>
+          <option value="3">Week 3 (days 15&ndash;21)</option><option value="4">Week 4 (days 22&ndash;28)</option>
         </select>
         <button class="btn" id="btnR2" style="width:100%">Make weekly PDF</button>
       </div>
       <div class="card" style="margin:0">
-        <h2 style="border:0; padding:0; margin-bottom:8px">Full 30-day report</h2>
+        <h2 style="border:0; padding:0; margin-bottom:8px">Full 60-day report</h2>
         <p class="help" style="margin:0 0 12px">The whole trial: KPIs, targets, every day, problems, checkpoints, sign-off page.</p>
         <div style="height:38px; margin-bottom:10px"></div>
         <button class="btn" id="btnR3" style="width:100%">Make final PDF</button>
+      </div>
+      <div class="card" style="margin:0">
+        <h2 style="border:0; padding:0; margin-bottom:8px">Klever consolidated sheet</h2>
+        <p class="help" style="margin:0 0 12px">Ephrata&rsquo;s one page &mdash; commercial, production
+          and supply, operation, cash.</p>
+        <input type="date" class="inp" id="rKlv" style="margin-bottom:10px">
+        <button class="btn" id="btnR4" style="width:100%">Make consolidated PDF</button>
       </div>
     </div>
   </div>
@@ -845,7 +910,7 @@ tfoot td{background:#fff6dd; font-weight:700; color:var(--navy)}
   <div class="card">
     <h2>Start over <span class="hint" id="lbl_wipeHint">Affects the open book only</span></h2>
     <p class="help" style="margin-top:0">Erases every entry in the book you have open and starts it as a fresh
-      30-day trial. The other book is left alone. Save a backup first.</p>
+      60-day trial. The other book is left alone. Save a backup first.</p>
     <button class="btn ghost" id="btnWipe" style="color:var(--bad); border-color:#e0b0b0">Erase this book</button>
   </div>
   <div class="card">
@@ -854,8 +919,8 @@ tfoot td{background:#fff6dd; font-weight:700; color:var(--navy)}
       <li>Set the <b>trial start date</b> at the top right. Everything else counts from there.</li>
       <li>Each evening open <b>Daily Entry</b> &mdash; the date and morning cash are already filled in for you. Type only the new numbers.</li>
       <li>Press <b>Make PDF of this day</b> and send it to the owner.</li>
-      <li>On days 7, 14, 20 and 30, fill in <b>Checkpoints</b> before the meeting.</li>
-      <li>On day 30, use <b>PDF Reports &rarr; Full 30-day report</b> for the final review.</li>
+      <li>On days 7, 14, 20, 30, 37, 44, 51 and 60, fill in <b>Checkpoints</b> before the meeting.</li>
+      <li>On day 60, use <b>PDF Reports &rarr; Full 60-day report</b> for the final review.</li>
     </ol>
   </div>
 </section>
@@ -872,14 +937,23 @@ tfoot td{background:#fff6dd; font-weight:700; color:var(--navy)}
 /* =========================================================
    storage
 ========================================================= */
-var KEY = "gm30_tracker_v1";
+var KEY = "gm30_tracker_v1";        /* unchanged — this is where every record lives */
+
+/* How long the trial runs. It started as 30 days and the owner extended it to 60.
+   Everything counts from here: the day strip, the weeks, the checkpoints, the reports.
+   The last week absorbs the remainder, exactly as week 4 used to run 22–30.
+   If this ever changes again, the plain "60" in the page title, the header, the tab
+   and the help list above must be changed to match. */
+var TRIALDAYS = 60;
+var WEEKS = Math.floor(TRIALDAYS/7);        /* 8 weeks — week 8 runs day 50 to day 60 */
 
 /* Printed on the gold strip at the top so it is never a guess which copy of the
    page you are looking at — the browser, the phone app, or an old tab. */
 var BUILD = "25";
 
 /* the repeating line-item lists carried on every day */
-var LISTKEYS = ["cashIn","cashOut","cheques","loans","transfers","production","deliveries","damages",
+var LISTKEYS = ["cashIn","cashOut","planIn","planOut",
+                "cheques","loans","transfers","production","deliveries","damages",
                 "downtime","materials","probs"];
 
 /* The free remark box that sits at the foot of every card on the entry page.
@@ -891,6 +965,7 @@ var REMARKS = [
   {k:"remCheques", sec:"Cheques received"},
   {k:"remLoans",   sec:"Loan repayment"},
   {k:"remProd",    sec:"Production, sales and delivery"},
+  {k:"remKlv",     sec:"Commercial and operation"},
   {k:"remMach",    sec:"Machines and materials"},
   {k:"remProb",    sec:"Problems and decisions"},
   {k:"remPrior",   sec:"Tomorrow&rsquo;s priorities"}
@@ -904,6 +979,11 @@ function blankDay(){
            countedBy:"", varReason:"",
            /* order book and notes */
            ordersValue:"", custNote:"",
+           /* Ephrata's consolidated sheet — the funnel, the site, and what ran short.
+              m² sold and m² produced are NOT here: they are already card 4. */
+           leads:"", visits:"", quotes:"", contracts:"", marginExt:"", marginRov:"",
+           jobsDel:"", jobsInst:"", m2Inst:"", complaints:"", resolved:"",
+           waste:"", stockShort:"", stockWhat:"",
            /* the free page — anything the boxes above have no place for */
            notes:"",
            /* morning and evening balance counted bank by bank */
@@ -1064,13 +1144,21 @@ function defaults(){
       {week:3, text:"Increase production by 10%",                  actual:"", status:"Not started", notes:""},
       {week:3, text:"Collect overdue payments",                    actual:"", status:"Not started", notes:""},
       {week:4, text:"Reach 5,000,000 ETB weekly profit",           actual:"", status:"Not started", notes:""},
-      {week:4, text:"Prepare next 30-day plan",                    actual:"", status:"Not started", notes:""}
+      {week:4, text:"Prepare next 30-day plan",                    actual:"", status:"Not started", notes:""},
+      {week:5, text:"", actual:"", status:"Not started", notes:""},
+      {week:6, text:"", actual:"", status:"Not started", notes:""},
+      {week:7, text:"", actual:"", status:"Not started", notes:""},
+      {week:8, text:"Prepare the plan for what comes next", actual:"", status:"Not started", notes:""}
     ],
     meetings:[
       {day:7,  topic:"What wastes the most money?",        decisions:"", actions:""},
       {day:14, topic:"What was fixed? Results in ETB",     decisions:"", actions:""},
       {day:20, topic:"7-day cash forecast",                decisions:"", actions:""},
-      {day:30, topic:"Final evaluation",                   decisions:"", actions:""}
+      {day:30, topic:"Final evaluation",                   decisions:"", actions:""},
+      {day:37, topic:"Where the second month stands",      decisions:"", actions:""},
+      {day:44, topic:"What was fixed? Results in ETB",     decisions:"", actions:""},
+      {day:51, topic:"7-day cash forecast",                decisions:"", actions:""},
+      {day:60, topic:"Final evaluation of the 60 days",    decisions:"", actions:""}
     ]
   };
 }
@@ -1235,9 +1323,9 @@ function applyLabels(){
   document.getElementById("lbl_lastMonth").textContent = "Last month’s profit ("+cur()+")";
 }
 
-function dayISO(i){ return addDays(S.startDate, i-1); }          // day 1..30 -> date
+function dayISO(i){ return addDays(S.startDate, i-1); }          // day 1..TRIALDAYS -> date
 function dayIndex(iso){ var n = diffDays(S.startDate, iso)+1; return n; }
-function inTrial(iso){ var n=dayIndex(iso); return n>=1 && n<=30; }
+function inTrial(iso){ var n=dayIndex(iso); return n>=1 && n<=TRIALDAYS; }
 function getDay(iso){ return S.days[iso] || null; }
 function ensureDay(iso){ if(!S.days[iso]) S.days[iso]=blankDay(); return S.days[iso]; }
 function filled(d){
@@ -1245,7 +1333,10 @@ function filled(d){
   var keys=["morning","received","paid","evening","sold","delivered","revenue","produced",
             "damaged","problems","fix","p1","ontime",
             "countedBy","varReason",
-            "ordersValue","custNote","notes"].concat(REMKEYS);
+            "ordersValue","custNote","notes",
+            "leads","visits","quotes","contracts","marginExt","marginRov",
+            "jobsDel","jobsInst","m2Inst","complaints","resolved",
+            "waste","stockShort","stockWhat"].concat(REMKEYS);
   for(var i=0;i<keys.length;i++){ if(has(d[keys[i]])) return true; }
   for(var j=0;j<LISTKEYS.length;j++){ if(liveRows(d,LISTKEYS[j]).length) return true; }
   /* a day where only the bank balances were counted still counts as entered */
@@ -1257,8 +1348,8 @@ function filled(d){
   }
   return false;
 }
-function weekOf(i){ return i<=7?1 : i<=14?2 : i<=21?3 : 4; }
-function weekRange(w){ return w===4 ? [22,30] : [(w-1)*7+1, w*7]; }
+function weekOf(i){ var w=Math.ceil(i/7); return w>WEEKS ? WEEKS : (w<1?1:w); }
+function weekRange(w){ return w===WEEKS ? [(WEEKS-1)*7+1, TRIALDAYS] : [(w-1)*7+1, w*7]; }
 
 /* derived values for one day */
 function calc(d){
@@ -1272,6 +1363,96 @@ function calc(d){
     dmgRate: num(d.produced)>0 ? num(d.damaged)/num(d.produced)*100 : 0
   };
 }
+/* ---- Ephrata's sheet: everything below is worked out, never typed ----
+   m² sold and m² produced are read from card 4 so nothing is entered twice. */
+function klvFigs(d){
+  var leads=num(d.leads), visits=num(d.visits), quotes=num(d.quotes), contracts=num(d.contracts);
+  var made=num(d.produced), waste=num(d.waste), sold=num(d.sold);
+  return {
+    leads:leads, visits:visits, quotes:quotes, contracts:contracts,
+    sold:sold, made:made, waste:waste,
+    toVisit: leads>0 ? visits/leads*100 : null,
+    toQuote: visits>0 ? quotes/visits*100 : null,
+    toContract: quotes>0 ? contracts/quotes*100 : null,
+    overall: leads>0 ? contracts/leads*100 : null,
+    perContract: contracts>0 ? sold/contracts : null,
+    wastePct: made>0 ? waste/made*100 : null,
+    marginExt: has(d.marginExt) ? num(d.marginExt) : null,
+    marginRov: has(d.marginRov) ? num(d.marginRov) : null,
+    jobsDel:num(d.jobsDel), jobsInst:num(d.jobsInst), m2Inst:num(d.m2Inst),
+    complaints:num(d.complaints), resolved:num(d.resolved),
+    openToday: Math.max(0, num(d.complaints)-num(d.resolved)),
+    short: d.stockShort||"", shortWhat: d.stockWhat||"",
+    any: has(d.leads)||has(d.visits)||has(d.quotes)||has(d.contracts)||
+         has(d.marginExt)||has(d.marginRov)||has(d.waste)||has(d.stockShort)||has(d.stockWhat)||
+         has(d.jobsDel)||has(d.jobsInst)||has(d.m2Inst)||has(d.complaints)||has(d.resolved)
+  };
+}
+/* jobs delivered but not yet fitted, and complaints not yet answered — both carry
+   over, so they are counted across every day up to and including this one */
+function klvRun(iso){
+  var del=0, inst=0, comp=0, res=0;
+  for(var k in S.days){
+    if(!Object.prototype.hasOwnProperty.call(S.days,k) || k>iso) continue;
+    var d=S.days[k];
+    del+=num(d.jobsDel); inst+=num(d.jobsInst);
+    comp+=num(d.complaints); res+=num(d.resolved);
+  }
+  return {waiting: del-inst, open: Math.max(0, comp-res)};
+}
+/* The plan is only worth writing if somebody looks back at it, so the day after,
+   this says what was promised and what actually came. */
+function renderPlanBox(d,c){
+  var el=document.getElementById("planBox"); if(!el) return;
+  var pin=colTotal("planIn","amount"), pout=colTotal("planOut","amount");
+  var C=esc(cur()), bits=[], notes=[];
+  if(pin||pout){
+    bits.push("Expected in tomorrow: <b>"+money(pin)+" "+C+"</b>");
+    bits.push("Expected out: <b>"+money(pout)+" "+C+"</b>");
+    bits.push("Net: <b>"+money(pin-pout)+" "+C+"</b>");
+    bits.push("Would leave <b>"+money(c.evening+pin-pout)+" "+C+"</b> at the end of tomorrow");
+    var mustPay=0, a=LSTATE.planOut||[];
+    for(var i=0;i<a.length;i++) if(a[i].must==="Must pay") mustPay+=num(a[i].amount);
+    if(mustPay>c.evening+pin){
+      notes.push('<div class="note red" style="margin-top:10px"><b>'+money(mustPay)+" "+C+
+        "</b> must be paid tomorrow, but only <b>"+money(c.evening+pin)+" "+C+
+        "</b> is expected to be there. Decide now what waits.</div>");
+    }
+  }
+  /* did yesterday's plan hold? */
+  var prev=getDay(addDays(sel,-1));
+  if(prev){
+    var wasIn=sumRows(prev,"planIn","amount"), wasOut=sumRows(prev,"planOut","amount");
+    if(wasIn||wasOut){
+      var gotIn=num(d.received), gotOut=num(d.paid);
+      notes.push('<div class="note" style="margin-top:10px">Yesterday you planned <b>'+
+        money(wasIn)+"</b> in and <b>"+money(wasOut)+"</b> out for today. Today actually took in <b>"+
+        money(gotIn)+"</b> and paid out <b>"+money(gotOut)+"</b> "+C+
+        " &mdash; "+(gotIn>=wasIn?"the money came in":"<b>"+money(wasIn-gotIn)+" "+C+" of it did not arrive")+
+        ".</div>");
+    }
+  }
+  el.innerHTML = (bits.length ? '<div class="note blue" style="margin-top:12px">'+
+    bits.join(" &nbsp;&bull;&nbsp; ")+"</div>" : "") + notes.join("");
+}
+function renderKlvBox(d){
+  var el=document.getElementById("klvBox"); if(!el) return;
+  var f=klvFigs(d), r=klvRun(sel), bits=[];
+  if(f.leads) bits.push("Lead to contract: <b>"+Math.round(f.overall)+"%</b> ("+
+    f.contracts+" of "+f.leads+")");
+  if(f.quotes) bits.push("Quote to contract: <b>"+Math.round(f.toContract)+"%</b>");
+  if(f.perContract!==null) bits.push("Per contract: <b>"+area(f.perContract)+" "+esc(unit())+"</b>");
+  if(f.wastePct!==null) bits.push("Waste: <b>"+f.wastePct.toFixed(1)+"%</b> of what was made");
+  if(f.jobsInst) bits.push("Per job fitted: <b>"+area(f.m2Inst/f.jobsInst)+" "+esc(unit())+"</b>");
+  if(r.waiting>0) bits.push("Waiting to be fitted: <b>"+r.waiting+"</b> (all days)");
+  if(r.open>0) bits.push("Complaints still open: <b>"+r.open+"</b> (all days)");
+  if(f.short==="Yes") bits.push("<b>Stock short</b>"+(f.shortWhat?" — "+esc(f.shortWhat):""));
+  el.innerHTML = bits.length
+    ? '<div class="note blue" style="margin-top:14px">'+bits.join(" &nbsp;&bull;&nbsp; ")+
+      '<div class="help" style="margin-top:6px">m&sup2; sold and m&sup2; made come from card 4 — they are not typed again here.</div></div>'
+    : '<div class="help" style="margin-top:14px">m&sup2; sold and m&sup2; made come from card 4 — they are not typed again here.</div>';
+}
+
 /* totals over a list of day-indexes */
 function totals(from,to){
   var t={received:0,paid:0,sold:0,delivered:0,revenue:0,produced:0,damaged:0,profit:0,
@@ -1320,7 +1501,10 @@ var sel = todayISO();
 var F = ["morning","received","paid","evening","sold","delivered","revenue","produced","damaged",
          "problems","fix","decision","decisionWhat","p1","p2","p3","ontime",
          "countedBy","varReason",
-         "ordersValue","custNote","notes"].concat(REMKEYS);
+         "ordersValue","custNote","notes",
+         "leads","visits","quotes","contracts","marginExt","marginRov",
+         "jobsDel","jobsInst","m2Inst","complaints","resolved",
+         "waste","stockShort","stockWhat"].concat(REMKEYS);
 
 /* =========================================================
    line-item lists — the detail behind every headline number
@@ -1592,7 +1776,7 @@ function accSet(){
   return false;
 }
 function lastFilledISO(){
-  for(var i=30;i>=1;i--){ var iso=dayISO(i); if(filled(getDay(iso))) return iso; }
+  for(var i=TRIALDAYS;i>=1;i--){ var iso=dayISO(i); if(filled(getDay(iso))) return iso; }
   return null;
 }
 /* the balance table on screen. On a phone every account becomes its own
@@ -1696,6 +1880,41 @@ var LISTS = {
       {k:"ref",    l:"Voucher no.", t:"text", ph:"Receipt / voucher", w:"100pt"},
       {k:"auth",   l:"Approved by", t:"text", ph:"Who authorised it", w:"105pt"},
       {k:"reason", l:"Reason",      t:"text", ph:"Why this money went out", w:"150pt"}
+    ]
+  },
+  /* Tomorrow's plan. These two are the only lists that are not a record of something
+     that happened — they are what the day expects of the next one. Nothing reads them
+     for a balance or a total; they exist to be checked against tomorrow's real figures. */
+  planIn:{
+    title:"Tomorrow — money you expect to come in",
+    why:"What you are counting on receiving tomorrow, from whom, and how sure you are.",
+    add:"+ Add expected money in",
+    cols:[
+      {k:"who",    l:"Who will pay", t:"text", ph:"Customer or source", w:"120pt"},
+      {k:"ctype",  l:"Code type",    t:"sel",  opts:CODETYPES, w:"92pt"},
+      {k:"code",   l:"Code / name",  t:"text", ph:"Code or name", w:"110pt", asks:"ctype", askMap:CODEASK},
+      {k:"what",   l:"What for",     t:"text", ph:"Order or invoice no.", w:"120pt"},
+      {k:"amount", l:"Expected",     t:"money", total:true, w:"92pt"},
+      {k:"method", l:"How",          t:"sel",  opts:PAYWAYS, w:"96pt"},
+      {k:"bank",   l:"Bank",         t:"sel",  opts:ETHBANKS, w:"140pt"},
+      {k:"sure",   l:"How sure",     t:"sel",  opts:["Certain","Likely","Not sure"], w:"96pt"},
+      {k:"reason", l:"Note",         t:"text", ph:"What was promised, and by whom", w:"150pt"}
+    ]
+  },
+  planOut:{
+    title:"Tomorrow — money you expect to pay out",
+    why:"What has to be paid tomorrow, to whom, and whether it can wait if the money is short.",
+    add:"+ Add expected money out",
+    cols:[
+      {k:"who",    l:"Pay to",      t:"text", ph:"Supplier or person", w:"120pt", dl:"sup"},
+      {k:"ctype",  l:"Code type",   t:"sel",  opts:CODETYPES, w:"92pt"},
+      {k:"code",   l:"Code / name", t:"text", ph:"Code or name", w:"110pt", asks:"ctype", askMap:CODEASK},
+      {k:"what",   l:"What for",    t:"text", ph:"Material, wages, tax, transport", w:"120pt"},
+      {k:"amount", l:"Expected",    t:"money", total:true, w:"92pt"},
+      {k:"method", l:"How",         t:"sel",  opts:PAYWAYS, w:"96pt"},
+      {k:"bank",   l:"Bank",        t:"sel",  opts:ETHBANKS, w:"140pt"},
+      {k:"must",   l:"Must it be paid",t:"sel",opts:["Must pay","Can wait"], w:"104pt"},
+      {k:"reason", l:"Note",        t:"text", ph:"Why it is due tomorrow", w:"150pt"}
     ]
   },
   /* One line per problem. A day rarely has only one, and a problem with no owner
@@ -2164,9 +2383,9 @@ function loadDay(){
   }
   var idx = dayIndex(sel);
   var badge=document.getElementById("dBadge");
-  if(idx>=1 && idx<=30){ badge.textContent="Day "+idx+" of 30"; badge.className="pill grey"; }
+  if(idx>=1 && idx<=TRIALDAYS){ badge.textContent="Day "+idx+" of "+TRIALDAYS; badge.className="pill grey"; }
   else if(idx<1){ badge.textContent="Before the trial starts"; badge.className="pill warn"; }
-  else { badge.textContent="Day "+idx+" — after the 30 days"; badge.className="pill warn"; }
+  else { badge.textContent="Day "+idx+" — after the "+TRIALDAYS+" days"; badge.className="pill warn"; }
 
   var st=document.getElementById("dStatus");
   var dd=getDay(sel);
@@ -2313,12 +2532,14 @@ function recalcDay(){
   if(num(d.sold)||num(d.delivered)) bits.push("Made minus delivered today: <b>"+
     area(num(d.produced)-num(d.delivered))+" "+esc(unit())+"</b>");
   pb.innerHTML = bits.length ? '<div class="note blue">'+bits.join(" &nbsp;&bull;&nbsp; ")+"</div>" : "";
+  renderKlvBox(d);
+  renderPlanBox(d,c);
   refreshChecks();
   renderAccDay();
 }
 function renderStrip(){
   var h="", t=todayISO();
-  for(var i=1;i<=30;i++){
+  for(var i=1;i<=TRIALDAYS;i++){
     var iso=dayISO(i), cls=[];
     if(filled(getDay(iso))) cls.push("filled");
     if(iso===t) cls.push("today");
@@ -2366,8 +2587,8 @@ function renderHistory(){
     '<th class="n">Damaged'+U+'</th><th class="n">Revenue</th>'+
     '<th class="n">Profit</th><th class="c">'+esc(S.owner||"Owner")+'?</th><th class="c">On time</th>'+
     '<th>Problem</th></tr></thead><tbody>';
-  var t=totals(1,30);
-  for(var i=1;i<=30;i++){
+  var t=totals(1,TRIALDAYS);
+  for(var i=1;i<=TRIALDAYS;i++){
     var iso=dayISO(i), d=getDay(iso), c=d?calc(d):null;
     var on = d&&d.ontime==="Yes" ? '<span class="pill good">Yes</span>'
            : d&&d.ontime==="No"  ? '<span class="pill bad">No</span>' : "";
@@ -2394,7 +2615,7 @@ function renderHistory(){
      '<td class="n">'+area(t.produced)+'</td><td class="n">'+area(t.sold)+"</td>"+
      '<td class="n">'+area(t.delivered)+'</td><td class="n">'+area(t.damaged)+"</td>"+
      '<td class="n">'+fmt(t.revenue)+'</td><td class="n">'+fmt(t.profit)+"</td>"+
-     '<td class="c">'+t.decisions+'</td><td class="c">'+t.onTime+"/30</td><td></td></tr></tfoot>";
+     '<td class="c">'+t.decisions+'</td><td class="c">'+t.onTime+"/"+TRIALDAYS+"</td><td></td></tr></tfoot>";
   document.getElementById("histTable").innerHTML=h;
 }
 document.getElementById("histTable").addEventListener("click",function(e){
@@ -2409,7 +2630,7 @@ document.getElementById("histTable").addEventListener("click",function(e){
    dashboard
 ========================================================= */
 function renderDash(){
-  var t=totals(1,30), d1=getDay(dayISO(1)), c1=d1?calc(d1):null;
+  var t=totals(1,TRIALDAYS), d1=getDay(dayISO(1)), c1=d1?calc(d1):null;
   var cash = t.evening===null ? null : t.evening;
   var startCash = c1 ? num(d1.morning) : null;
   var cashUp = (cash!==null && startCash!==null) ? cash-startCash : null;
@@ -2439,10 +2660,10 @@ function renderDash(){
           chqW.length||chqB.length ? "bad" : (chqI.length?"good":""));
   document.getElementById("kpiCards").innerHTML=h;
 
-  var done=t.reported, pct=Math.round(done/30*100);
+  var done=t.reported, pct=Math.round(done/TRIALDAYS*100);
   document.getElementById("progressBox").innerHTML=
     '<div style="display:flex;justify-content:space-between;font-size:13px">'+
-    "<span><b>"+done+" of 30 days</b> entered</span>"+
+    "<span><b>"+done+" of "+TRIALDAYS+" days</b> entered</span>"+
     "<span><b>"+t.onTime+"</b> reports sent on time &nbsp;&bull;&nbsp; <b>"+
     t.asks+"</b> decision"+(t.asks===1?"":"s")+" asked of "+esc(S.owner||"the owner")+
     " over "+t.decisions+" day"+(t.decisions===1?"":"s")+"</span></div>"+
@@ -2471,7 +2692,7 @@ function renderDash(){
       "Reduce", stat(null,"")],
     ["Price per "+unit(), c1&&num(d1.sold)>0?money(num(d1.revenue)/num(d1.sold)):"—",
       t.sold>0?money(t.revenue/t.sold):"—", "—", stat(null,"")],
-    ["Reports sent on time", d1?(d1.ontime||"—"):"—", t.onTime+" / 30", "30 / 30",
+    ["Reports sent on time", d1?(d1.ontime||"—"):"—", t.onTime+" / "+TRIALDAYS, TRIALDAYS+" / "+TRIALDAYS,
       stat(t.reported===0?null:t.onTime===t.reported, t.onTime===t.reported&&t.reported>0?"Perfect":(t.reported-t.onTime)+" late")]
   ];
   var kh='<thead><tr><th>KPI</th><th class="n">Day 1</th><th class="n">Now</th>'+
@@ -2487,7 +2708,7 @@ function renderDash(){
   var wh='<thead><tr><th>Week</th><th>Days</th><th class="n">Revenue</th><th class="n">Paid out</th>'+
          '<th class="n">Profit</th><th class="n">Made'+wu+'</th><th class="n">Delivered'+wu+'</th>'+
          '<th class="n">Damaged'+wu+'</th><th class="c">vs. target</th></tr></thead><tbody>';
-  for(var w=1;w<=4;w++){
+  for(var w=1;w<=WEEKS;w++){
     var r=weekRange(w), tw=totals(r[0],r[1]);
     var vs = wk>0 ? (tw.days===0 ? '<span class="pill grey">—</span>'
       : tw.profit>=wk ? '<span class="pill good">Met</span>'
@@ -2751,7 +2972,50 @@ function prodTrend(){
    targets
 ========================================================= */
 var STAT=["Not started","In progress","Achieved","Missed"];
+/* A book saved while the trial was 30 days has no week 5-8 and no checkpoint past
+   day 30. Add what is missing and never touch a row that already exists — the
+   targets and checkpoints already written are the user's own work. */
+var LATECHECKS = [
+  {day:37, topic:"Where the second month stands"},
+  {day:44, topic:"What was fixed? Results in ETB"},
+  {day:51, topic:"7-day cash forecast"},
+  {day:60, topic:"Final evaluation of the 60 days"}
+];
+function ensureSchedule(){
+  var added=false, i, w;
+  if(!Array.isArray(S.targets)) S.targets=[];
+  for(w=1;w<=WEEKS;w++){
+    var seen=false;
+    for(i=0;i<S.targets.length;i++) if(+S.targets[i].week===w) seen=true;
+    if(!seen){ S.targets.push({week:w, text:"", actual:"", status:"Not started", notes:""}); added=true; }
+  }
+  S.targets.sort(function(a,b){ return (+a.week)-(+b.week); });
+  if(!Array.isArray(S.meetings)) S.meetings=[];
+  for(i=0;i<LATECHECKS.length;i++){
+    if(LATECHECKS[i].day>TRIALDAYS) continue;
+    var have=false;
+    for(var j=0;j<S.meetings.length;j++) if(+S.meetings[j].day===LATECHECKS[i].day) have=true;
+    if(!have){
+      S.meetings.push({day:LATECHECKS[i].day, topic:LATECHECKS[i].topic, decisions:"", actions:""});
+      added=true;
+    }
+  }
+  S.meetings.sort(function(a,b){ return (+a.day)-(+b.day); });
+  if(added) save();
+}
+/* the weekly report picker follows the trial length too */
+function fillWeekSelect(){
+  var el=document.getElementById("rWeek"); if(!el) return;
+  var keep=el.value, h="";
+  for(var w=1;w<=WEEKS;w++){
+    var r=weekRange(w);
+    h+='<option value="'+w+'">Week '+w+' (days '+r[0]+'&ndash;'+r[1]+')</option>';
+  }
+  el.innerHTML=h;
+  if(keep) el.value=keep;
+}
 function renderTargets(){
+  ensureSchedule();
   var h="";
   for(var i=0;i<S.targets.length;i++){
     var t=S.targets[i];
@@ -2779,8 +3043,8 @@ document.getElementById("targetList").addEventListener("change",function(e){
   S.targets[+el.getAttribute("data-i")][el.getAttribute("data-k")]=el.value; save();
 });
 document.getElementById("btnAddTarget").onclick=function(){
-  var w=prompt("Which week is this target for? (1-4)","4"); if(!w) return;
-  w=Math.min(4,Math.max(1,parseInt(w,10)||4));
+  var w=prompt("Which week is this target for? (1-"+WEEKS+")",String(WEEKS)); if(!w) return;
+  w=Math.min(WEEKS,Math.max(1,parseInt(w,10)||WEEKS));
   S.targets.push({week:w, text:"", actual:"", status:"Not started", notes:""});
   save(); renderTargets();
 };
@@ -2789,6 +3053,7 @@ document.getElementById("btnAddTarget").onclick=function(){
    meetings
 ========================================================= */
 function renderMeet(){
+  ensureSchedule();
   var h="";
   for(var i=0;i<S.meetings.length;i++){
     var m=S.meetings[i], iso=dayISO(m.day), t=totals(1,m.day);
@@ -2847,7 +3112,7 @@ function monogram(){
 function masthead(title, period){
   return '<div class="mast"><div class="mono">'+esc(monogram())+"</div>"+
     '<div class="who"><div class="co">'+esc(coName())+"</div>"+
-    '<div class="kind">30-Day General Manager Trial &nbsp;·&nbsp; '+
+    '<div class="kind">'+TRIALDAYS+'-Day General Manager Trial &nbsp;·&nbsp; '+
     esc(bookName(BK.current))+" book</div></div>"+
     '<div class="ti"><div class="t">'+esc(title)+"</div>"+
     '<div class="p">'+esc(period||"")+"</div></div></div>"+
@@ -2894,7 +3159,7 @@ function box(k,v,neg){ return '<div class="pbox'+(neg?" neg":"")+'"><div class="
 function execSummary(t,startCash,U,C){
   if(t.days===0) return "No days were entered for this trial, so there is nothing to report yet.";
   var s=[];
-  s.push("Over the 30-day trial period "+t.days+" of 30 daily reports were completed, "+
+  s.push("Over the "+TRIALDAYS+"-day trial period "+t.days+" of "+TRIALDAYS+" daily reports were completed, "+
          t.onTime+" of them submitted on time.");
   s.push("The business took in <b>"+money(t.revenue)+" "+C+"</b> of revenue and paid out <b>"+
          money(t.paid)+" "+C+"</b> in cash, leaving a cash profit of <b>"+money(t.profit)+" "+C+"</b>.");
@@ -3056,11 +3321,88 @@ function remarkLog(from,to){
 }
 
 /* ---- daily ---- */
+/* Ephrata's one-page sheet: the four sections of the paper form, each built from
+   figures already on the day — nothing here is a second set of records. */
+function printKlever(iso){
+  var d=getDay(iso);
+  if(!filled(d)){ alert("Nothing is entered for "+fmtDate(iso)+" yet."); return; }
+  var f=klvFigs(d), c=calc(d), r=klvRun(iso), C=esc(cur()), U=esc(unit());
+  var h=docHead("Daily Consolidated Report", longDate(iso));
+  var secN=0;
+  function sec(t){ return "<h3>"+(++secN)+" · "+t+"</h3>"; }
+  function pcTxt(v){ return v===null ? "—" : Math.round(v)+"%"; }
+  function row(k,v){ return "<tr><td>"+k+'</td><td style="text-align:right">'+v+"</td></tr>"; }
+  function pair(rows){ return "<table><tbody>"+rows.join("")+"</tbody></table>"; }
+
+  h+='<div class="pgrid">'+
+     box(U+" sold",area(num(d.sold)))+
+     box(U+" made",area(num(d.produced)))+
+     box(U+" installed",area(f.m2Inst))+
+     box("Cash tonight ("+C+")",money(c.evening))+
+     "</div>";
+
+  h+=sec("Commercial")+pair([
+    row("Leads", f.leads),
+    row("Site visits", f.visits+(f.leads?' <span class="carry">'+pcTxt(f.toVisit)+" of leads</span>":"")),
+    row("Quotations", f.quotes+(f.visits?' <span class="carry">'+pcTxt(f.toQuote)+" of visits</span>":"")),
+    row("Contracts", f.contracts+(f.quotes?' <span class="carry">'+pcTxt(f.toContract)+" of quotations</span>":"")),
+    row("Lead to contract", pcTxt(f.overall)),
+    row(U+" sold", area(f.sold)+(f.perContract===null?"":' <span class="carry">'+area(f.perContract)+" per contract</span>")),
+    row("External margin", f.marginExt===null?'<span class="muted">—</span>':money(f.marginExt)+" "+C+"/"+U),
+    row("Rovestone margin", f.marginRov===null?'<span class="muted">—</span>':money(f.marginRov)+" "+C+"/"+U)
+  ]);
+
+  h+=sec("Production and supply")+pair([
+    row(U+" produced", area(f.made)),
+    row("Waste", area(f.waste)+(f.wastePct===null?"":' <span class="carry">'+f.wastePct.toFixed(1)+"% of what was made</span>")),
+    row("Damaged", area(num(d.damaged))),
+    row("Made against "+U+" sold today", area(f.made-f.sold)),
+    row("Stock shortage", f.short==="Yes"?'<span class="chip no">Yes</span>'
+        :(f.short==="No"?'<span class="chip ok">No</span>':'<span class="muted">—</span>')),
+    row("What ran short", f.shortWhat?esc(f.shortWhat):'<span class="muted">—</span>')
+  ]);
+
+  h+=sec("Operation")+pair([
+    row("Jobs delivered", f.jobsDel),
+    row("Jobs installed", f.jobsInst),
+    row(U+" installed", area(f.m2Inst)+(f.jobsInst?' <span class="carry">'+area(f.m2Inst/f.jobsInst)+" per job</span>":"")),
+    row("Complaints", f.complaints),
+    row("Resolved", f.resolved),
+    row("Still open today", f.openToday?'<span class="chip no">'+f.openToday+"</span>":'<span class="chip ok">None</span>'),
+    row("Waiting to be fitted, all days", r.waiting>0?'<span class="chip no">'+r.waiting+"</span>":'<span class="chip ok">None</span>'),
+    row("Complaints open, all days", r.open?'<span class="chip no">'+r.open+"</span>":'<span class="chip ok">None</span>')
+  ]);
+
+  h+=sec("Cash summary")+
+     "<table><thead><tr><th>Opening</th>"+
+     '<th style="text-align:right">Money in</th><th style="text-align:right">Money out</th>'+
+     '<th style="text-align:right">Expected tonight</th><th style="text-align:right">Counted</th>'+
+     '<th style="text-align:right">Difference</th></tr></thead><tbody><tr>'+
+     '<td style="text-align:right">'+money(num(d.morning))+"</td>"+
+     '<td style="text-align:right">'+money(num(d.received))+"</td>"+
+     '<td style="text-align:right">'+money(num(d.paid))+"</td>"+
+     '<td style="text-align:right">'+money(c.expectEve)+"</td>"+
+     '<td style="text-align:right">'+(has(d.evening)?money(num(d.evening)):'<span class="muted">not counted</span>')+"</td>"+
+     '<td style="text-align:right">'+(has(d.evening)
+        ? (c.variance===0?'<span class="chip ok">Agrees</span>'
+           :'<span class="chip no">'+(c.variance>0?"+":"−")+money(Math.abs(c.variance))+"</span>")
+        : '<span class="muted">—</span>')+"</td></tr></tbody></table>";
+  h+='<div class="lede">These are the same figures as card 1 of the daily entry — the safe and '+
+     "every bank added together. The itemised lines behind them are in the daily report.</div>";
+  if(has(d.varReason)) h+='<div class="lede"><b>Note on the difference:</b> '+nl(d.varReason)+"</div>";
+
+  if(has(d.remKlv)) h+=sec("Remark")+'<div class="blockq">'+nl(d.remKlv)+"</div>";
+  if(has(d.notes))  h+=sec("Anything else")+'<div class="blockq">'+nl(d.notes)+"</div>";
+
+  h+=sigBlock()+footBar("Daily consolidated report");
+  doPrint(h,"portrait",safeName("Klever consolidated sheet — "+fmtDate(iso)));
+}
+
 function printDaily(iso){
   var d=getDay(iso);
   if(!filled(d)){ alert("Nothing is entered for "+fmtDate(iso)+" yet."); return; }
   var c=calc(d), i=dayIndex(iso), C=esc(cur()), U=esc(unit());
-  var h=docHead("Daily Report — Day "+i+" of 30", longDate(iso));
+  var h=docHead("Daily Report — Day "+i+" of "+TRIALDAYS, longDate(iso));
   var R='<td style="text-align:right">';
   var TH='<th style="text-align:right">';
   /* sections number themselves, so skipping an empty one never leaves a gap */
@@ -3168,6 +3510,35 @@ function printDaily(iso){
   if(has(d.custNote))
     h+='<div class="lede"><b>Customer and market note:</b> '+nl(d.custNote)+"</div>";
 
+  /* ---------- commercial and operation (Ephrata's sheet) ---------- */
+  var kf=klvFigs(d);
+  if(kf.any||has(d.remKlv)){
+    var kr=klvRun(iso);
+    h+=sec("Commercial and operation")+
+       '<div class="pgrid">'+
+       box("Leads",kf.leads)+
+       box("Site visits",kf.visits)+
+       box("Quotations",kf.quotes)+
+       box("Contracts",kf.contracts)+
+       box("Lead to contract",kf.overall===null?"—":Math.round(kf.overall)+"%")+
+       box("External margin ("+C+"/"+U+")",kf.marginExt===null?"—":money(kf.marginExt))+
+       box("Rovestone margin ("+C+"/"+U+")",kf.marginRov===null?"—":money(kf.marginRov))+
+       box("Waste ("+U+")",area(kf.waste)+(kf.wastePct===null?"":" ("+kf.wastePct.toFixed(1)+"%)"),
+           kf.wastePct!==null&&kf.wastePct>15)+
+       box("Jobs delivered",kf.jobsDel)+
+       box("Jobs installed",kf.jobsInst)+
+       box("Installed ("+U+")",area(kf.m2Inst))+
+       box("Complaints",kf.complaints+" / "+kf.resolved+" resolved",kf.openToday>0)+
+       "</div>";
+    var kbits=[];
+    if(kr.waiting>0) kbits.push("<b>"+kr.waiting+"</b> job"+(kr.waiting===1?"":"s")+
+      " delivered but not yet fitted, counting every day so far");
+    if(kr.open>0) kbits.push("<b>"+kr.open+"</b> complaint"+(kr.open===1?"":"s")+" still not answered");
+    if(kf.short==="Yes") kbits.push("<b>Stock ran short</b>"+(kf.shortWhat?" — "+esc(kf.shortWhat):""));
+    if(kbits.length) h+='<div class="lede">'+kbits.join(" &nbsp;&bull;&nbsp; ")+"</div>";
+    h+=remLine(d,"remKlv");
+  }
+
   if(liveRows(d,"production").length){
     h+=sec("Made today — by project")+
        repList(d,"production")+
@@ -3248,6 +3619,20 @@ function printDaily(iso){
   if(has(d.notes))
     h+=sec("Anything else")+'<div class="lede">'+nl(d.notes)+"</div>";
 
+  if(liveRows(d,"planIn").length||liveRows(d,"planOut").length){
+    var pIn=sumRows(d,"planIn","amount"), pOut=sumRows(d,"planOut","amount");
+    h+=sec("Money planned for tomorrow")+
+       '<div class="pgrid">'+
+       box("Expected in ("+C+")",money(pIn))+
+       box("Expected out ("+C+")",money(pOut))+
+       box("Net ("+C+")",money(pIn-pOut),pIn-pOut<0)+
+       box("Would leave ("+C+")",money(c.evening+pIn-pOut),c.evening+pIn-pOut<0)+
+       "</div>";
+    if(liveRows(d,"planIn").length)  h+=repList(d,"planIn");
+    if(liveRows(d,"planOut").length) h+=repList(d,"planOut");
+    h+='<div class="lede">This is a plan, not a record: none of it is counted in any '+
+       "balance or total above. Tomorrow&rsquo;s report shows what actually came.</div>";
+  }
   h+=sec("Tomorrow&rsquo;s top 3 priorities")+
      '<table><tbody><tr><td style="width:22pt">1</td><td>'+(has(d.p1)?esc(d.p1):"—")+"</td></tr>"+
      '<tr><td>2</td><td>'+(has(d.p2)?esc(d.p2):"—")+"</td></tr>"+
@@ -3256,7 +3641,7 @@ function printDaily(iso){
   /* the daily report shows this day only — nothing is carried in from earlier days */
   h+='<div class="lede">This report was sent on time: <b>'+
      (has(d.ontime)?esc(d.ontime):"—")+"</b></div>";
-  h+=sigBlock()+footBar("Daily Report, day "+i+" of 30");
+  h+=sigBlock()+footBar("Daily Report, day "+i+" of "+TRIALDAYS);
   doPrint(h,"portrait", safeName(bookName(BK.current)+" - Daily Report - Day "+i+" - "+fmtDate(iso)));
 }
 
@@ -3503,14 +3888,14 @@ function printWeek(w){
 
 /* ---- full 30 day ---- */
 function printFull(){
-  var t=totals(1,30), C=esc(cur()), U=esc(unit());
+  var t=totals(1,TRIALDAYS), C=esc(cur()), U=esc(unit());
   var d1=getDay(dayISO(1));
   var startCash=d1?num(d1.morning):0;
-  var period=fmtDate(dayISO(1))+" to "+fmtDate(dayISO(30));
+  var period=fmtDate(dayISO(1))+" to "+fmtDate(dayISO(TRIALDAYS));
 
   /* ---- cover page ---- */
   var h='<div class="cover"><div class="top">'+masthead("Final Report", period)+"</div>"+
-    '<div class="mid"><div class="big">30-Day General Manager Trial — Final Report</div>'+
+    '<div class="mid"><div class="big">'+TRIALDAYS+'-Day General Manager Trial — Final Report</div>'+
     '<div class="sub">'+esc(coName())+"</div>"+
     '<div class="band">'+
       '<div><div class="k">Period covered</div><div class="v">'+esc(period)+"</div></div>"+
@@ -3535,10 +3920,10 @@ function printFull(){
      box("Waiting to deliver ("+U+")",area(t.sold-t.delivered))+
      box("Price per "+U+" ("+C+")", t.sold>0?money(t.revenue/t.sold):"—")+
      box("Damaged ("+U+")",area(t.damaged)+(t.produced>0?" ("+(t.damaged/t.produced*100).toFixed(1)+"%)":""))+
-     box("Reports on time",t.onTime+" / 30")+
-     box("Days entered",t.days+" / 30")+"</div>";
+     box("Reports on time",t.onTime+" / "+TRIALDAYS)+
+     box("Days entered",t.days+" / "+TRIALDAYS)+"</div>";
   /* what is left in the safe and in every bank on the last day */
-  var fv=acctRange(null,dayISO(30),false);
+  var fv=acctRange(null,dayISO(TRIALDAYS),false);
   if(fv.order.length){
     h+='<div class="runhead" style="margin-top:11pt"><b>What each account holds at the end</b>'+
        "<span>Day 1 to day 30</span></div>"+
@@ -3554,7 +3939,7 @@ function printFull(){
   h+="<h3>2. Week by week</h3><table><thead><tr><th>Week</th><th>Days</th><th>Revenue</th><th>Paid out</th>"+
      "<th>Profit</th><th>Made ("+U+")</th><th>Sold ("+U+")</th><th>Delivered ("+U+")</th>"+
      "<th>Damaged ("+U+")</th></tr></thead><tbody>";
-  for(var w=1;w<=4;w++){
+  for(var w=1;w<=WEEKS;w++){
     var r=weekRange(w), tw=totals(r[0],r[1]);
     h+="<tr><td><b>Week "+w+"</b></td><td>"+tw.days+"</td>"+
        '<td style="text-align:right">'+money(tw.revenue)+'</td><td style="text-align:right">'+money(tw.paid)+"</td>"+
@@ -3603,7 +3988,7 @@ function printFull(){
        box("Still waiting ("+C+")",money(chqSum(fWait)),fWait.length>0)+
        box("Returned unpaid ("+C+")",money(chqSum(fBad)),fBad.length>0)+"</div>"+
        rangeList(1,30,"cheques");
-    var fPend=chqPendTable(dayISO(30));
+    var fPend=chqPendTable(dayISO(TRIALDAYS));
     if(fPend) h+='<div class="lede"><b>Not yet in the bank on the last day of the trial:</b></div>'+fPend;
   }
 
@@ -3646,11 +4031,11 @@ function printFull(){
   var fNotes=noteLog(1,30);
   if(fNotes) h+="<h3>"+(++tailN)+". Anything else, day by day</h3>"+fNotes;
   h+="<h3>"+(++tailN)+". Sign-off</h3>"+
-     '<div class="lede">This report covers the full 30-day trial period agreed between '+
+     '<div class="lede">This report covers the full '+TRIALDAYS+'-day trial period agreed between '+
      esc(gmName())+" and "+esc(S.owner||"the owner")+", from "+fmtDate(dayISO(1))+" to "+
-     fmtDate(dayISO(30))+". The figures above are taken from the daily records kept "+
-     "throughout the period.</div>"+sigBlock()+footBar("30-Day Trial — Final Report");
-  doPrint(h,"landscape", safeName(bookName(BK.current)+" - 30-Day Trial Final Report"));
+     fmtDate(dayISO(TRIALDAYS))+". The figures above are taken from the daily records kept "+
+     "throughout the period.</div>"+sigBlock()+footBar(TRIALDAYS+"-Day Trial — Final Report");
+  doPrint(h,"landscape", safeName(bookName(BK.current)+" - "+TRIALDAYS+"-Day Trial Final Report"));
 }
 function dayTable(from,to){
   /* morning cash is left out on purpose — it is always the previous evening balance */
@@ -3734,7 +4119,7 @@ function noteLog(from,to){
 function decisionLog(){
   var h='<table><thead><tr><th style="width:34pt">Day</th><th style="width:52pt">Date</th>'+
         "<th>What "+esc(S.owner||"the owner")+" was asked to decide</th></tr></thead><tbody>", any=false;
-  for(var i=1;i<=30;i++){
+  for(var i=1;i<=TRIALDAYS;i++){
     var iso=dayISO(i), d=getDay(iso); if(!d) continue;
     var asks=askList(d); if(!asks.length) continue;
     any=true;
@@ -3750,6 +4135,7 @@ function decisionLog(){
 document.getElementById("btnR1").onclick=function(){ printDaily(document.getElementById("rDate").value||sel); };
 document.getElementById("btnR2").onclick=function(){ printWeek(+document.getElementById("rWeek").value); };
 document.getElementById("btnR3").onclick=printFull;
+document.getElementById("btnR4").onclick=function(){ printKlever(document.getElementById("rKlv").value||sel); };
 document.getElementById("btnPdfAll").onclick=printFull;
 document.getElementById("btnPdfWeek").onclick=function(){ printWeek(+document.getElementById("weekPick").value); };
 
@@ -3804,12 +4190,16 @@ document.getElementById("btnCsv").onclick=function(){
     prod()+" Made"+U,prod()+" Sold"+U,prod()+" Delivered"+U,"Damaged"+U,
     "Revenue"+C,"Day Profit"+C,"New Order Value"+C,
     "Machine Hours Lost","Customer & Market Note","Anything Else",
+    "Leads","Site Visits","Quotations","Contracts",
+    "External Margin"+C+"/"+unit(),"Rovestone Margin"+C+"/"+unit(),
+    "Waste"+U,"Stock Shortage","What Ran Short",
+    "Jobs Delivered","Jobs Installed","Installed"+U,"Complaints","Complaints Resolved",
     "Problems Listed","Cost Of Problems"+C,"Decisions Asked",
     "Problems","Proposed Fix","Need Owner Decision","What to decide",
     "Priority 1","Priority 2","Priority 3","Report On Time"];
   for(var rc=0;rc<REMARKS.length;rc++) cols.push("Remark — "+REMARKS[rc].sec.replace(/&rsquo;/g,"'"));
   var out=[cols.map(csvQuote).join(",")];
-  for(var i=1;i<=30;i++){
+  for(var i=1;i<=TRIALDAYS;i++){
     var iso=dayISO(i), d=getDay(iso)||blankDay(), c=calc(d), f=filled(d);
     out.push([i,iso,d.morning,d.received,d.paid,f?Math.round(c.evening):"",
       f?Math.round(c.expectEve):"", (f&&has(d.evening))?Math.round(c.variance):"",
@@ -3819,6 +4209,9 @@ document.getElementById("btnCsv").onclick=function(){
       d.produced,d.sold,d.delivered,d.damaged,d.revenue,f?Math.round(c.profit):"",
       d.ordersValue,
       sumRows(d,"downtime","hours")||"",d.custNote,d.notes,
+      d.leads,d.visits,d.quotes,d.contracts,d.marginExt,d.marginRov,
+      d.waste,d.stockShort,d.stockWhat,
+      d.jobsDel,d.jobsInst,d.m2Inst,d.complaints,d.resolved,
       liveRows(d,"probs").length||"",sumRows(d,"probs","cost")||"",askList(d).length||"",
       d.problems,d.fix,d.decision,d.decisionWhat,d.p1,d.p2,d.p3,d.ontime
     ].concat(REMKEYS.map(function(k){ return d[k]||""; })).map(csvQuote).join(","));
@@ -3834,7 +4227,7 @@ document.getElementById("btnCsvLines").onclick=function(){
   for(var lk=0;lk<LISTKEYS.length;lk++) maxc=Math.max(maxc,LISTS[LISTKEYS[lk]].cols.length);
   for(var hc=1;hc<=maxc;hc++) header.push("Column "+hc);
   out.push(header.map(csvQuote).join(","));
-  for(var i=1;i<=30;i++){
+  for(var i=1;i<=TRIALDAYS;i++){
     var iso=dayISO(i), d=getDay(iso);
     if(!d) continue;
     for(var k=0;k<LISTKEYS.length;k++){
@@ -3868,7 +4261,7 @@ document.getElementById("fileIn").addEventListener("change",function(e){
 });
 document.getElementById("btnWipe").onclick=function(){
   var me=bookName(BK.current);
-  if(!confirm("Erase every entry in the "+me+" book and start a new 30-day trial?\n\n"+
+  if(!confirm("Erase every entry in the "+me+" book and start a new "+TRIALDAYS+"-day trial?\n\n"+
               "The other book is not touched.")) return;
   if(!confirm("This cannot be undone. Are you sure?")) return;
   var keep=S.name;
@@ -3882,7 +4275,7 @@ document.getElementById("btnWipe").onclick=function(){
    boot
 ========================================================= */
 function renderAll(){
-  applyLabels(); renderStrip(); renderHistory(); renderDash(); renderTargets(); renderMeet();
+  applyLabels(); fillWeekSelect(); renderStrip(); renderHistory(); renderDash(); renderTargets(); renderMeet();
   renderAccDash(); renderAccSetup(); renderSupSetup(); renderSupDL(); renderBooks();
 }
 function renderBooks(){
@@ -3895,10 +4288,10 @@ function renderBooks(){
   /* a standing reminder of which book is open — the two must never be mixed */
   var other=[];
   for(var j=0;j<BK.books.length;j++){ if(j!==BK.current) other.push(bookName(j)); }
-  var t=totals(1,30);
+  var t=totals(1,TRIALDAYS);
   document.getElementById("bookBar").innerHTML =
     "You are working in the <u>"+esc(bookName(BK.current))+"</u> book"+
-    '<span class="sep">·</span><span class="q">'+t.days+" of 30 days entered</span>"+
+    '<span class="sep">·</span><span class="q">'+t.days+" of "+TRIALDAYS+" days entered</span>"+
     (other.length?'<span class="sep">·</span><span class="q">'+esc(other.join(", "))+
                   " kept completely separate</span>":"")+
     '<span class="sep">·</span><span class="q">build '+BUILD+"</span>";
@@ -3927,6 +4320,7 @@ function boot(){
   sel = inTrial(t) ? t : dayISO(1);
   document.getElementById("dDate").value=sel;
   document.getElementById("rDate").value=sel;
+  document.getElementById("rKlv").value=sel;
   loadDay(); renderAll();
 }
 boot();
