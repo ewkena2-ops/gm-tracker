@@ -1,0 +1,4 @@
+# Copy this file to .dev.vars to run the sync server on this machine.
+# .dev.vars is never committed. The real password lives in Cloudflare,
+# set with: npx wrangler secret put SYNC_TOKEN
+SYNC_TOKEN=testtoken123

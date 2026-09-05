@@ -894,6 +894,28 @@ tfoot td{background:#fff6dd; font-weight:700; color:var(--navy)}
     </div>
   </div>
   <div class="card">
+    <h2>Phone and computer together <span class="hint" id="syncHint">Not connected</span></h2>
+    <p class="help" style="margin-top:0">
+      Connect this device to your own sync address and every entry is carried between your
+      computer and your phone by itself, within a few seconds. Type the same address and
+      password on both. The app keeps working normally with no connection &mdash; whatever was
+      typed offline is sent up the next time it reaches the internet.
+    </p>
+    <div class="row">
+      <label class="f">Sync address
+        <input class="inp" id="syncUrl" placeholder="https://gm-tracker-sync.YOURNAME.workers.dev" autocomplete="off" spellcheck="false"></label>
+      <label class="f">Sync password
+        <input class="inp" id="syncToken" type="password" placeholder="The password you chose" autocomplete="off"></label>
+    </div>
+    <div class="row" style="align-items:center">
+      <button class="btn" id="btnSyncOn">Connect this device</button>
+      <button class="btn ghost" id="btnSyncNow">Sync now</button>
+      <button class="btn ghost" id="btnSyncOff">Disconnect</button>
+      <span id="syncMsg" class="help"></span>
+    </div>
+    <p class="help" id="syncState" style="margin-bottom:0"></p>
+  </div>
+  <div class="card">
     <h2>Back up your data <span class="hint">Do this every week</span></h2>
     <p class="help" style="margin-top:0">
       The app saves inside this browser on this computer. If the browser data is cleared, the entries go with it.
@@ -4246,7 +4268,8 @@ document.getElementById("btnCsvLines").onclick=function(){
   download(safeName(bookName(BK.current)+"-detail-lines")+".csv","﻿"+out.join("\r\n"),"text/csv;charset=utf-8");
 };
 document.getElementById("btnBackup").onclick=function(){
-  download("GM-trial-backup-"+todayISO()+".json", JSON.stringify(S,null,2), "application/json");
+  collectDay();
+  download("GM-trial-backup-"+todayISO()+".json", JSON.stringify(BK,null,2), "application/json");
   document.getElementById("backupMsg").textContent="Backup saved to your Downloads folder.";
 };
 document.getElementById("btnRestore").onclick=function(){
@@ -4327,6 +4350,376 @@ boot();
 /* data from the one-book version is rewritten in the two-book shape straight away,
    so the Android copy is updated too and the conversion is never repeated */
 if(MIGRATED) save();
+
+/* =========================================================
+   Cloud sync — carries entries between the computer and the phone
+
+   The browser stays the source of truth on each device: everything is
+   still written to this device's own storage first and the app works
+   with no connection at all. This layer only carries the differences.
+
+   Each device holds a cursor, the highest change number it has seen.
+   A sync sends whatever changed here and asks for everything newer
+   than that cursor. Records are split one per day plus one per book's
+   settings, so the computer and the phone only collide when both
+   edited the very same day between two syncs; then the later one wins
+   that day and nothing else is touched.
+========================================================= */
+var SYNC_CFG_KEY = "gm30_sync_cfg";
+var SYNC_CUR_KEY = "gm30_sync_cursor";
+var SYNC_POLL_MS = 6000;      /* how often a connected device looks for changes */
+var SYNC_PUSH_MS = 1200;      /* quiet period after typing before sending       */
+var SYNC_MAX_HOLD = 30000;    /* never hold a change back longer than this      */
+
+var SY = {
+  on:false, url:"", token:"",
+  cursor:0,
+  shadow:{},        /* path -> the JSON last known to match the server */
+  dirty:{},         /* paths changed here and not yet accepted        */
+  busy:false, timer:null, poll:null,
+  backoff:0, held:0,
+  lastOk:0, lastErr:"", firstJoin:false
+};
+
+function syncLoadCfg(){
+  try{
+    var c=JSON.parse(localStorage.getItem(SYNC_CFG_KEY)||"null");
+    if(c && c.url && c.token){ SY.url=String(c.url); SY.token=String(c.token); return true; }
+  }catch(e){}
+  return false;
+}
+function syncSaveCfg(){
+  try{ localStorage.setItem(SYNC_CFG_KEY, JSON.stringify({url:SY.url, token:SY.token})); }catch(e){}
+}
+function syncClearCfg(){
+  try{ localStorage.removeItem(SYNC_CFG_KEY); localStorage.removeItem(SYNC_CUR_KEY); }catch(e){}
+}
+function syncLoadCursor(){
+  var v=null;
+  try{ v=localStorage.getItem(SYNC_CUR_KEY); }catch(e){}
+  SY.cursor = v==null ? 0 : (parseInt(v,10)||0);
+  return v!=null;
+}
+function syncSaveCursor(){
+  try{ localStorage.setItem(SYNC_CUR_KEY, String(SY.cursor)); }catch(e){}
+}
+
+/* ---- the records: one per book's settings, one per day ---- */
+function syncDocs(){
+  var m={}, i, k, iso;
+  for(i=0;i<BK.books.length;i++){
+    var b=BK.books[i], meta={};
+    for(k in b){ if(b.hasOwnProperty(k) && k!=="days") meta[k]=b[k]; }
+    m["b"+i]=meta;
+    var days=b.days||{};
+    for(iso in days){
+      if(days.hasOwnProperty(iso) && days[iso] && /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(iso)){
+        m["d"+i+":"+iso]=days[iso];
+      }
+    }
+  }
+  return m;
+}
+/* Which book, and which day, a record belongs to. */
+function syncParse(p){
+  var mb=/^b([0-9]+)$/.exec(p);
+  if(mb) return {book:+mb[1], iso:null};
+  var md=/^d([0-9]+):([0-9]{4}-[0-9]{2}-[0-9]{2})$/.exec(p);
+  if(md) return {book:+md[1], iso:md[2]};
+  return null;
+}
+
+/* Take the current state as already agreed with the server. */
+function syncBaseline(){
+  var m=syncDocs(); SY.shadow={};
+  for(var p in m){ if(m.hasOwnProperty(p)) SY.shadow[p]=JSON.stringify(m[p]); }
+}
+
+/* Called after every local save: note what changed on this device. */
+function syncTouch(){
+  if(!SY.on) return;
+  var m=syncDocs(), p, changed=false;
+  for(p in m){
+    if(!m.hasOwnProperty(p)) continue;
+    if(SY.shadow[p]!==JSON.stringify(m[p])){ SY.dirty[p]=1; changed=true; }
+  }
+  for(p in SY.shadow){                       /* a day erased on this device */
+    if(SY.shadow.hasOwnProperty(p) && SY.shadow[p]!==null && !m.hasOwnProperty(p)){
+      SY.dirty[p]=1; changed=true;
+    }
+  }
+  if(changed) syncSoon(SYNC_PUSH_MS);
+}
+
+function syncSoon(ms){
+  if(!SY.on || SY.timer) return;
+  SY.timer=setTimeout(function(){ SY.timer=null; syncRun(); }, ms==null?SYNC_PUSH_MS:ms);
+}
+
+/* Is someone typing right now? Never redraw the page underneath them. */
+function syncTyping(){
+  var a=document.activeElement;
+  if(!a) return false;
+  var t=(a.tagName||"").toUpperCase();
+  return t==="INPUT" || t==="TEXTAREA" || t==="SELECT" || a.isContentEditable===true;
+}
+
+/* Put a record from the server into this device's data. */
+function syncApplyDoc(p, body){
+  var w=syncParse(p);
+  if(!w || !BK.books[w.book]) return false;
+  var b=BK.books[w.book], k;
+  if(w.iso===null){
+    if(!body) return false;                  /* a book's settings are never deleted */
+    for(k in body){ if(body.hasOwnProperty(k)) b[k]=body[k]; }
+  }else{
+    if(!b.days) b.days={};
+    if(body===null || body===undefined) delete b.days[w.iso];
+    else b.days[w.iso]=body;
+  }
+  return true;
+}
+
+/* Redraw without losing the day the user is looking at. */
+function syncRedraw(){
+  var keep=sel;
+  try{
+    S = BK.books[BK.current];
+    document.getElementById("startDate").value=S.startDate;
+    document.getElementById("s_bookName").value=S.name||"";
+    document.getElementById("s_company").value=S.company||"";
+    document.getElementById("s_gm").value=S.gm||"";
+    document.getElementById("s_owner").value=S.owner||"";
+    document.getElementById("s_cur").value=S.cur||"ETB";
+    document.getElementById("s_product").value=S.product||"Cabinets";
+    document.getElementById("s_unit").value=S.unit||"m²";
+    document.getElementById("s_weekTarget").value=S.weekTarget||"";
+    document.getElementById("s_lastMonth").value=S.lastMonth||"";
+    sel=keep;
+    document.getElementById("dDate").value=sel;
+    loadDay(); renderAll();
+  }catch(e){}
+}
+
+function syncStatus(hint, msg){
+  var h=document.getElementById("syncHint"),
+      m=document.getElementById("syncMsg"),
+      s=document.getElementById("syncState");
+  if(h && hint!=null) h.textContent=hint;
+  if(m && msg!=null) m.textContent=msg;
+  if(!s) return;
+  if(!SY.on){ s.textContent="This device keeps its entries to itself until it is connected."; return; }
+  var bits=[];
+  bits.push(SY.lastOk ? "Last carried across at "+new Date(SY.lastOk).toLocaleTimeString()
+                      : "Waiting for the first sync");
+  var d=0; for(var k in SY.dirty){ if(SY.dirty.hasOwnProperty(k)) d++; }
+  if(d) bits.push(d+(d===1?" change":" changes")+" still to send");
+  if(SY.lastErr) bits.push(SY.lastErr);
+  s.textContent=bits.join("  -  ");
+}
+
+/* One round trip: send what changed here, take back everything newer. */
+function syncRun(){
+  if(!SY.on || SY.busy) return;
+  if(!navigator.onLine){
+    SY.lastErr="No internet on this device just now.";
+    syncStatus("Offline","");
+    return;
+  }
+
+  /* Hold off while a field is being typed in, but never for long. */
+  if(syncTyping()){
+    if(!SY.held) SY.held=Date.now();
+    if(Date.now()-SY.held < SYNC_MAX_HOLD){ syncSoon(2000); return; }
+  }
+  SY.held=0;
+
+  /* Every day field already calls collectDay() on each keystroke, so what is
+     on screen is in BK already. Re-scan anyway: it is the one thing that keeps
+     the change list honest if any code path ever changes BK another way. */
+  var p, snapshot=syncDocs();
+  for(p in snapshot){
+    if(snapshot.hasOwnProperty(p) && SY.shadow[p]!==JSON.stringify(snapshot[p])) SY.dirty[p]=1;
+  }
+  for(p in SY.shadow){
+    if(SY.shadow.hasOwnProperty(p) && SY.shadow[p]!==null && !snapshot.hasOwnProperty(p)) SY.dirty[p]=1;
+  }
+
+  var out=[], sent={};
+  for(p in SY.dirty){
+    if(!SY.dirty.hasOwnProperty(p)) continue;
+    var body = snapshot.hasOwnProperty(p) ? snapshot[p] : null;
+    out.push({p:p, body:body});
+    sent[p]=JSON.stringify(body===null?null:body);
+  }
+
+  SY.busy=true;
+  syncStatus(null, out.length ? "Sending "+out.length+"..." : "Checking...");
+
+  var ctl = (typeof AbortController!=="undefined") ? new AbortController() : null;
+  var killer = setTimeout(function(){ try{ if(ctl) ctl.abort(); }catch(e){} }, 20000);
+
+  fetch(SY.url.replace(/\/+$/,"")+"/sync", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+SY.token },
+    body: JSON.stringify({ cursor:SY.cursor, docs:out }),
+    signal: ctl ? ctl.signal : undefined,
+    cache: "no-store"
+  })
+  .then(function(r){
+    return r.text().then(function(txt){
+      var j=null; try{ j=JSON.parse(txt); }catch(e){}
+      if(!r.ok){
+        var why = r.status===401 ? "The sync password is not right for that address."
+                : (j && j.error) ? ("The sync server said: "+j.error)
+                : ("The sync server answered "+r.status+".");
+        throw new Error(why);
+      }
+      if(!j || !Array.isArray(j.docs)) throw new Error("The sync server sent something unexpected.");
+      return j;
+    });
+  })
+  .then(function(j){
+    clearTimeout(killer);
+
+    /* Anything sent that has not been retyped since is settled. */
+    var after=syncDocs(), q;
+    for(q in sent){
+      if(!sent.hasOwnProperty(q)) continue;
+      var cur = after.hasOwnProperty(q) ? JSON.stringify(after[q]) : "null";
+      if(cur===sent[q]){ delete SY.dirty[q]; SY.shadow[q]= after.hasOwnProperty(q) ? cur : null; }
+    }
+
+    var serverHas={}, i;
+    for(i=0;i<j.docs.length;i++) serverHas[j.docs[i].p]=1;
+
+    var touched=false;
+    for(i=0;i<j.docs.length;i++){
+      var d=j.docs[i];
+      if(SY.dirty[d.p]) continue;             /* retyped here while in flight */
+      var incomingBody = (d.body===null||d.body===undefined) ? null : d.body;
+      var incoming = incomingBody===null ? null : JSON.stringify(incomingBody);
+      if(SY.shadow[d.p]===incoming) continue;
+      if(syncApplyDoc(d.p, incomingBody)){ SY.shadow[d.p]=incoming; touched=true; }
+    }
+
+    /* On the very first connection nothing here is marked as changed, so hand
+       up every record the server has never seen. Where both sides already hold
+       the same record, the server's copy is the one that stands. */
+    if(SY.firstJoin){
+      SY.firstJoin=false;
+      var mine=syncDocs();
+      for(q in mine){ if(mine.hasOwnProperty(q) && !serverHas[q]) SY.dirty[q]=1; }
+    }
+
+    if(typeof j.cursor==="number" && j.cursor>SY.cursor) SY.cursor=j.cursor;
+    syncSaveCursor();
+
+    if(touched){
+      var blob=JSON.stringify(BK);
+      try{ localStorage.setItem(KEY, blob); }catch(e){}
+      try{ if(window.GMAndroid && GMAndroid.saveState) GMAndroid.saveState(blob); }catch(e){}
+      if(!syncTyping()) syncRedraw();
+    }
+
+    SY.busy=false; SY.backoff=0; SY.lastOk=Date.now(); SY.lastErr="";
+    syncStatus("Connected", touched ? ("Brought in "+j.docs.length+" change"+(j.docs.length===1?"":"s")+".")
+                                    : "Up to date.");
+
+    var still=false;
+    for(q in SY.dirty){ if(SY.dirty.hasOwnProperty(q)){ still=true; break; } }
+    if(still || j.more) syncSoon(400);
+  })
+  .catch(function(e){
+    clearTimeout(killer);
+    SY.busy=false;
+    SY.lastErr = (e && e.name==="AbortError") ? "The sync server did not answer in time."
+               : (e && e.message) ? e.message : "Could not reach the sync server.";
+    SY.backoff = Math.min(SY.backoff ? SY.backoff*2 : 8000, 60000);
+    syncStatus("Trouble", SY.lastErr);
+    syncSoon(SY.backoff);
+  });
+}
+
+function syncStart(firstJoin){
+  SY.on=true;
+  SY.firstJoin=!!firstJoin;
+  syncBaseline();
+  SY.dirty={};
+  if(SY.poll) clearInterval(SY.poll);
+  SY.poll=setInterval(function(){
+    if(document.hidden || SY.busy || SY.timer) return;
+    syncRun();
+  }, SYNC_POLL_MS);
+  syncStatus("Connecting...","");
+  syncRun();
+}
+function syncStop(){
+  SY.on=false; SY.firstJoin=false;
+  if(SY.poll){ clearInterval(SY.poll); SY.poll=null; }
+  if(SY.timer){ clearTimeout(SY.timer); SY.timer=null; }
+  SY.dirty={}; SY.shadow={}; SY.lastErr=""; SY.lastOk=0;
+  syncStatus("Not connected","");
+}
+
+/* ---- every local save now also tells the sync layer ---- */
+var syncInnerSave = save;
+save = function(){ syncInnerSave(); syncTouch(); };
+
+/* ---- the buttons on Setup and Backup ---- */
+(function(){
+  var uEl=document.getElementById("syncUrl"),
+      tEl=document.getElementById("syncToken");
+
+  if(syncLoadCfg()){
+    if(uEl) uEl.value=SY.url;
+    if(tEl) tEl.value=SY.token;
+    var hadCursor=syncLoadCursor();
+    syncStart(!hadCursor);
+  }else{
+    syncStatus("Not connected","");
+  }
+
+  var on=document.getElementById("btnSyncOn");
+  if(on) on.onclick=function(){
+    var u=(uEl.value||"").trim().replace(/\/+$/,""), t=(tEl.value||"").trim();
+    /* https only, so the sync password never crosses a network in the clear.
+       Plain http is allowed for this machine alone, to test a server locally. */
+    var okUrl = /^https:\/\/\S+$/i.test(u) ||
+                /^http:\/\/(localhost|127\.0\.0\.1)(:[0-9]+)?(\/\S*)?$/i.test(u);
+    if(!okUrl){
+      syncStatus(null,"Type the full sync address, starting with https://");
+      return;
+    }
+    if(!t){ syncStatus(null,"Type the sync password as well."); return; }
+    var fresh = (u!==SY.url || t!==SY.token);
+    SY.url=u; SY.token=t;
+    syncSaveCfg();
+    if(fresh){ SY.cursor=0; syncSaveCursor(); }
+    syncStart(true);
+  };
+
+  var now=document.getElementById("btnSyncNow");
+  if(now) now.onclick=function(){
+    if(!SY.on){ syncStatus(null,"Connect this device first."); return; }
+    SY.backoff=0; SY.held=0; syncRun();
+  };
+
+  var off=document.getElementById("btnSyncOff");
+  if(off) off.onclick=function(){
+    if(!confirm("Stop carrying entries between this device and the others?\n\n"+
+                "Everything already on this device stays exactly where it is.")) return;
+    syncStop(); syncClearCfg();
+    SY.url=""; SY.token="";
+    if(uEl) uEl.value="";
+    if(tEl) tEl.value="";
+    syncStatus("Not connected","Disconnected.");
+  };
+})();
+
+window.addEventListener("online", function(){ if(SY.on){ SY.backoff=0; syncSoon(500); } });
+document.addEventListener("visibilitychange", function(){ if(!document.hidden && SY.on) syncSoon(500); });
+
 window.addEventListener("beforeunload", collectDay);
 </script>
 </body>
