@@ -4,11 +4,16 @@
   "main": "src/index.js",
   "compatibility_date": "2025-09-01",
   "observability": { "enabled": true },
+
+  // One address only. Preview URLs would publish older versions of this Worker
+  // under extra addresses, which private business data has no need of.
+  "workers_dev": true,
+  "preview_urls": false,
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "gm-tracker-sync",
-      "database_id": "PUT-YOUR-DATABASE-ID-HERE"
+      "database_id": "b39a422b-5a2d-47aa-b6df-988cc5e28dc4"
     }
   ]
 }
