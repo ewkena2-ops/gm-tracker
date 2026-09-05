@@ -4429,6 +4429,16 @@ function syncParse(p){
   return null;
 }
 
+/* Is this book actually in use on this device? A book with a day entered, or
+   with the company or the general manager typed in, is one somebody has been
+   working in. A book still exactly as the app created it is not. */
+function syncBookInUse(i){
+  var b=BK.books[i];
+  if(!b) return false;
+  for(var k in b.days){ if(b.days.hasOwnProperty(k)) return true; }
+  return has(b.company) || has(b.gm) || has(b.lastMonth);
+}
+
 /* Take the current state as already agreed with the server. */
 function syncBaseline(){
   var m=syncDocs(); SY.shadow={};
@@ -4581,6 +4591,7 @@ function syncRun(){
   })
   .then(function(j){
     clearTimeout(killer);
+    var joining = SY.firstJoin;
 
     /* Anything sent that has not been retyped since is settled. */
     var after=syncDocs(), q;
@@ -4597,6 +4608,14 @@ function syncRun(){
     for(i=0;i<j.docs.length;i++){
       var d=j.docs[i];
       if(SY.dirty[d.p]) continue;             /* retyped here while in flight */
+      /* First connection, and this device is already working in that book: keep
+         what is here and send it up instead. Without this the device that
+         happened to connect second would wipe the settings on the one actually
+         in use, simply because the server already held a record. Days are never
+         affected either way; the two sides are merged. */
+      if(joining && /^b[0-9]+$/.test(d.p) && syncBookInUse(+d.p.slice(1))){
+        SY.dirty[d.p]=1; continue;
+      }
       var incomingBody = (d.body===null||d.body===undefined) ? null : d.body;
       var incoming = incomingBody===null ? null : JSON.stringify(incomingBody);
       if(SY.shadow[d.p]===incoming) continue;
@@ -4606,7 +4625,7 @@ function syncRun(){
     /* On the very first connection nothing here is marked as changed, so hand
        up every record the server has never seen. Where both sides already hold
        the same record, the server's copy is the one that stands. */
-    if(SY.firstJoin){
+    if(joining){
       SY.firstJoin=false;
       var mine=syncDocs();
       for(q in mine){ if(mine.hasOwnProperty(q) && !serverHas[q]) SY.dirty[q]=1; }

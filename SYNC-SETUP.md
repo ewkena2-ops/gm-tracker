@@ -25,6 +25,10 @@ Part 2 and Part 3.
 
 Everything already on the computer is sent up at that moment.
 
+Connect the computer before the phone if you can. The order is not critical: a
+device that has entries of its own keeps them and sends them up, rather than
+taking blank settings from a device that has none.
+
 ## Part 3 — connect the phone
 
 1. Open the same address on the phone: https://ewkena2-ops.github.io/gm-tracker/
