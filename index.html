@@ -42,6 +42,40 @@ header.top .sub{font-size:12.5px; opacity:.75; margin-top:2px}
 #saveFlag{font-size:12.5px; color:#bfe6cd; min-width:96px; text-align:right; opacity:0; transition:opacity .25s}
 #saveFlag.show{opacity:1}
 
+/* ---------- whether sync is on, said plainly and always in view ---------- */
+#syncBadge{
+  display:inline-flex; align-items:center; gap:7px; white-space:nowrap;
+  font-size:12.5px; font-weight:600; padding:5px 11px; border-radius:999px;
+  background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.28); color:#fff;
+}
+#syncBadge .bulb{width:9px; height:9px; border-radius:50%; background:#c9d2e4; flex:0 0 auto}
+#syncBadge.on{background:rgba(110,231,160,.18); border-color:rgba(110,231,160,.55)}
+#syncBadge.on .bulb{background:#6ee7a0; animation:syncPulse 2.4s infinite}
+#syncBadge.busy .bulb{background:#ffd77a; animation:syncPulse 1.1s infinite}
+#syncBadge.bad{background:rgba(255,140,140,.18); border-color:rgba(255,140,140,.5)}
+#syncBadge.bad .bulb{background:#ff8c8c}
+@keyframes syncPulse{
+  0%{box-shadow:0 0 0 0 rgba(110,231,160,.55)}
+  70%{box-shadow:0 0 0 7px rgba(110,231,160,0)}
+  100%{box-shadow:0 0 0 0 rgba(110,231,160,0)}
+}
+@media (prefers-reduced-motion:reduce){ #syncBadge .bulb{animation:none} }
+
+.syncban{
+  display:flex; align-items:center; gap:13px; margin:0 0 15px;
+  padding:14px 16px; border-radius:10px;
+  border:1px solid var(--line); background:var(--line-2); color:var(--muted);
+}
+.syncban .bulb{width:15px; height:15px; border-radius:50%; background:#a9b4c9; flex:0 0 auto}
+.syncban b{display:block; font-size:17px; line-height:1.25}
+.syncban span{display:block; font-size:13px; margin-top:3px; opacity:.9}
+.syncban.on{background:var(--good-bg); border-color:#bde3cb; color:var(--good)}
+.syncban.on .bulb{background:var(--good)}
+.syncban.busy{background:var(--warn-bg); border-color:#e8d59b; color:var(--warn)}
+.syncban.busy .bulb{background:var(--warn)}
+.syncban.bad{background:var(--bad-bg); border-color:#eec4c4; color:var(--bad)}
+.syncban.bad .bulb{background:var(--bad)}
+
 /* ---------- book switcher (Klever / Rovestone) ---------- */
 .books{display:flex; gap:4px; background:rgba(0,0,0,.22); padding:4px; border-radius:9px}
 .books button{
@@ -455,6 +489,7 @@ tfoot td{background:#fff6dd; font-weight:700; color:var(--navy)}
       <input type="date" id="startDate">
     </div>
     <span id="saveFlag">&#10003; Saved</span>
+    <span id="syncBadge" title="Whether this device is carrying entries to and from your other one"><span class="bulb"></span><span id="syncBadgeText">Not connected</span></span>
   </div>
 </header>
 <div class="bookbar" id="bookBar"></div>
@@ -895,6 +930,13 @@ tfoot td{background:#fff6dd; font-weight:700; color:var(--navy)}
   </div>
   <div class="card">
     <h2>Phone and computer together <span class="hint" id="syncHint">Not connected</span></h2>
+    <div class="syncban" id="syncBanner">
+      <span class="bulb"></span>
+      <div>
+        <b id="syncBanHead">Not connected</b>
+        <span id="syncBanNote">This device keeps its entries to itself.</span>
+      </div>
+    </div>
     <p class="help" style="margin-top:0">
       Connect this device to your own sync address and every entry is carried between your
       computer and your phone by itself, within a few seconds. Type the same address and
@@ -4517,6 +4559,7 @@ function syncStatus(hint, msg){
       s=document.getElementById("syncState");
   if(h && hint!=null) h.textContent=hint;
   if(m && msg!=null) m.textContent=msg;
+  syncPaintState();
   if(!s) return;
   if(!SY.on){ s.textContent="This device keeps its entries to itself until it is connected."; return; }
   var bits=[];
@@ -4526,6 +4569,49 @@ function syncStatus(hint, msg){
   if(d) bits.push(d+(d===1?" change":" changes")+" still to send");
   if(SY.lastErr) bits.push(SY.lastErr);
   s.textContent=bits.join("  -  ");
+}
+
+/* Where sync stands, in one sentence, painted in two places: a badge in the
+   header that is on screen whatever tab is open, and a plain green or red
+   banner at the top of the sync card. The old grey word next to the heading
+   was too easy to miss to be the only sign that this worked. */
+function syncPaintState(){
+  var state, head, note, d=0, k;
+  for(k in SY.dirty){ if(SY.dirty.hasOwnProperty(k)) d++; }
+
+  if(!SY.on){
+    state=""; head="Not connected";
+    note="This device keeps its entries to itself. Fill in the two boxes below, then press Connect this device.";
+  }else if(!navigator.onLine){
+    state="busy"; head="Connected, waiting for internet";
+    note="Nothing is lost. Whatever is typed now goes up as soon as this device is online again.";
+  }else if(SY.lastErr){
+    state="bad"; head="Trouble";
+    note=SY.lastErr;
+  }else if(!SY.lastOk){
+    state="busy"; head="Connecting…";
+    note="Talking to the sync server.";
+  }else{
+    state="on"; head="Connected";
+    note = d ? (d+(d===1?" change":" changes")+" still to send — carrying them across now.")
+             : "Everything here is on your other device too. Last carried across at "+
+               new Date(SY.lastOk).toLocaleTimeString()+".";
+  }
+
+  var b=document.getElementById("syncBadge");
+  if(b){
+    b.className=state;
+    var bt=document.getElementById("syncBadgeText");
+    if(bt) bt.textContent=head;
+    b.title=head+" — "+note;
+  }
+  var p=document.getElementById("syncBanner");
+  if(p){
+    p.className="syncban"+(state?" "+state:"");
+    var hb=document.getElementById("syncBanHead"), nb=document.getElementById("syncBanNote");
+    if(hb) hb.textContent=head;
+    if(nb) nb.textContent=note;
+  }
 }
 
 /* One round trip: send what changed here, take back everything newer. */
