@@ -119,3 +119,30 @@ npx wrangler deploy
 ```
 
 Then press **Connect this device** again on both devices with the new password.
+
+The password cannot be read back afterwards. Cloudflare returns a secret's name
+and type and never its value, to the dashboard, the API, `wrangler` or the
+account owner alike. `npx wrangler secret list` shows only:
+
+```
+[ { "name": "SYNC_TOKEN", "type": "secret_text" } ]
+```
+
+So if it is forgotten, the only way forward is to set a new one. That costs
+nothing: the database and every entry in it are untouched, and the two devices
+just have to be connected again.
+
+`secret put` must be typed at its prompt. Piping the password into it on Windows
+sends the line ending too, and the trailing newline becomes part of the stored
+secret, so every device is then refused with **401**. To set it without a prompt,
+put the exact value in a JSON file and use `secret bulk` instead:
+
+```
+cd worker
+echo {"SYNC_TOKEN":"the-password"} > secrets.json
+npx wrangler secret bulk secrets.json
+del secrets.json
+```
+
+Write that file outside the repository, or delete it straight afterwards, so the
+password is never committed.
