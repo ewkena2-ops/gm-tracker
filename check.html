@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sync check</title>
+<style>
+  :root{ --bg:#f6f7f9; --card:#fff; --ink:#15181d; --dim:#5b6472; --line:#dfe3e9;
+         --ok:#0f7b3f; --okbg:#e6f5ec; --bad:#b3261e; --badbg:#fdeceb; --wait:#7a6000; --waitbg:#fdf6e3; }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#14171c; --card:#1c2027; --ink:#eceff4; --dim:#9aa4b2; --line:#2c323b;
+           --ok:#5fd08a; --okbg:#16301f; --bad:#ff8a80; --badbg:#3a1c19; --wait:#f0cf6a; --waitbg:#332b12; }
+  }
+  *{ box-sizing:border-box }
+  body{ margin:0; background:var(--bg); color:var(--ink);
+        font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; padding:20px }
+  .wrap{ max-width:640px; margin:0 auto }
+  h1{ font-size:22px; margin:0 0 4px }
+  .sub{ color:var(--dim); margin:0 0 20px }
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:14px }
+  .test{ display:flex; gap:12px; align-items:flex-start; padding:12px 0; border-bottom:1px solid var(--line) }
+  .test:last-child{ border-bottom:0 }
+  .dot{ flex:0 0 auto; width:26px; height:26px; border-radius:50%; display:grid; place-items:center;
+        font-size:15px; font-weight:700; background:var(--waitbg); color:var(--wait) }
+  .dot.ok{ background:var(--okbg); color:var(--ok) }
+  .dot.bad{ background:var(--badbg); color:var(--bad) }
+  .test b{ display:block; font-weight:600 }
+  .test span{ color:var(--dim); font-size:14px; word-break:break-word }
+  .verdict{ font-size:17px; padding:16px; border-radius:12px; background:var(--waitbg); color:var(--wait);
+            border:1px solid var(--line) }
+  .verdict.ok{ background:var(--okbg); color:var(--ok) }
+  .verdict.bad{ background:var(--badbg); color:var(--bad) }
+  .verdict b{ display:block; font-size:20px; margin-bottom:6px }
+  button{ font:inherit; font-weight:600; padding:14px 18px; border-radius:10px; border:1px solid var(--line);
+          background:var(--card); color:var(--ink); cursor:pointer; width:100%; margin-top:6px }
+  button.main{ background:#1f6feb; border-color:#1f6feb; color:#fff }
+  pre{ background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:12px;
+       font-size:12px; white-space:pre-wrap; word-break:break-word; margin:12px 0 0; max-height:240px; overflow:auto }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Sync check</h1>
+  <p class="sub">This runs by itself. Wait for the box at the bottom to turn green or red.</p>
+
+  <div class="card" id="tests">
+    <div class="test" id="t1"><div class="dot">…</div><div><b>This browser can reach the internet</b><span>waiting</span></div></div>
+    <div class="test" id="t2"><div class="dot">…</div><div><b>This browser can reach the sync server</b><span>waiting</span></div></div>
+    <div class="test" id="t3"><div class="dot">…</div><div><b>The sync server allows this page to talk to it</b><span>waiting</span></div></div>
+  </div>
+
+  <div class="verdict" id="verdict"><b>Testing…</b>Give it a few seconds.</div>
+
+  <button class="main" id="copy">Copy the result</button>
+  <button id="again">Run the test again</button>
+
+  <pre id="report"></pre>
+</div>
+
+<script>
+var SYNC = "https://gm-tracker-sync.ewkena2.workers.dev";
+var lines = [];
+
+function mark(id, state, text){
+  var el = document.getElementById(id);
+  var dot = el.querySelector(".dot");
+  dot.className = "dot" + (state === "ok" ? " ok" : state === "bad" ? " bad" : "");
+  dot.textContent = state === "ok" ? "✓" : state === "bad" ? "✕" : "…";
+  el.querySelector("span").textContent = text;
+}
+
+/* fetch with a hard time limit, so a silent block cannot hang the page for ever */
+function get(url, opts, ms){
+  opts = opts || {};
+  var ctl = new AbortController();
+  var timer = setTimeout(function(){ ctl.abort(); }, ms || 15000);
+  opts.signal = ctl.signal;
+  opts.cache = "no-store";
+  return fetch(url, opts).then(function(r){ clearTimeout(timer); return r; },
+                               function(e){ clearTimeout(timer); throw e; });
+}
+
+function why(e){
+  if (e && e.name === "AbortError") return "no answer at all (timed out after 15 seconds)";
+  return (e && e.message) ? e.message : String(e);
+}
+
+function verdict(state, head, body){
+  var v = document.getElementById("verdict");
+  v.className = "verdict" + (state ? " " + state : "");
+  v.innerHTML = "";
+  var b = document.createElement("b"); b.textContent = head; v.appendChild(b);
+  v.appendChild(document.createTextNode(body));
+  lines.push("VERDICT: " + head + " - " + body);
+  document.getElementById("report").textContent = lines.join("\n");
+}
+
+function run(){
+  lines = ["Sync check " + new Date().toISOString(),
+           "page: " + location.href,
+           "browser: " + navigator.userAgent,
+           "navigator.onLine: " + navigator.onLine, ""];
+  ["t1","t2","t3"].forEach(function(id){ mark(id, "", "waiting"); });
+  verdict("", "Testing…", "Give it a few seconds.");
+
+  /* 1 - can this browser make any cross-site request at all? */
+  get("https://api.github.com/zen").then(function(r){
+    mark("t1", "ok", "yes, HTTP " + r.status);
+    lines.push("T1 internet: OK " + r.status);
+    return true;
+  }).catch(function(e){
+    mark("t1", "bad", why(e));
+    lines.push("T1 internet: FAIL " + why(e));
+    return false;
+  }).then(function(net){
+
+    /* 2 - can it reach the sync server's open health page? no password needed */
+    return get(SYNC + "/health").then(function(r){
+      return r.text().then(function(t){
+        var good = r.ok && t.indexOf("gm-tracker-sync") !== -1;
+        mark("t2", good ? "ok" : "bad", good ? "yes, the server answered" : "HTTP " + r.status + " " + t.slice(0,120));
+        lines.push("T2 health: " + (good ? "OK" : "BAD " + r.status + " " + t.slice(0,200)));
+        return { net: net, health: good };
+      });
+    }).catch(function(e){
+      mark("t2", "bad", why(e));
+      lines.push("T2 health: FAIL " + why(e));
+      return { net: net, health: false };
+    });
+
+  }).then(function(s){
+
+    /* 3 - does the browser's CORS preflight succeed? a wrong password still proves the channel works */
+    return get(SYNC + "/sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer probe-not-a-real-password" },
+      body: JSON.stringify({ cursor: 999999999, docs: [] })
+    }).then(function(r){
+      var good = (r.status === 401 || r.status === 200);
+      mark("t3", good ? "ok" : "bad", good ? "yes, the channel is open (HTTP " + r.status + ")" : "HTTP " + r.status);
+      lines.push("T3 cors/post: " + (good ? "OK " + r.status : "BAD " + r.status));
+      s.cors = good;
+      return s;
+    }).catch(function(e){
+      mark("t3", "bad", why(e));
+      lines.push("T3 cors/post: FAIL " + why(e));
+      s.cors = false;
+      return s;
+    });
+
+  }).then(function(s){
+
+    if (!s.net && !s.health){
+      verdict("bad", "This browser is not getting out at all",
+        "Even a normal website request failed, so it is not about the sync server. Check the internet connection on this computer, then run the test again.");
+    } else if (!s.health){
+      verdict("bad", "Something on this computer is blocking the sync server",
+        "The browser reaches the rest of the internet but not " + SYNC + ". That is an ad-blocker, an antivirus web shield, a VPN, or a network filter blocking workers.dev. Press Copy the result and send it to me - there is a way around this that does not depend on your network.");
+    } else if (!s.cors){
+      verdict("bad", "The server answers, but this page is not allowed to talk to it",
+        "The health page loaded but the sync request was refused by the browser. Press Copy the result and send it to me.");
+    } else {
+      verdict("ok", "The connection works",
+        "This browser can reach the sync server and is allowed to talk to it. So the failure is in what was typed: the address or the password in Setup & Backup is not right. Clear both boxes and paste them in fresh.");
+    }
+  });
+}
+
+document.getElementById("again").onclick = run;
+document.getElementById("copy").onclick = function(){
+  var t = document.getElementById("report").textContent || lines.join("\n");
+  var btn = this;
+  function done(){ btn.textContent = "Copied - now paste it to me"; setTimeout(function(){ btn.textContent = "Copy the result"; }, 4000); }
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(done, function(){ window.prompt("Copy this and send it to me:", t); });
+  } else {
+    window.prompt("Copy this and send it to me:", t);
+  }
+};
+
+run();
+</script>
+</body>
+</html>
