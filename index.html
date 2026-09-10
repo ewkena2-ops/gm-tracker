@@ -4652,7 +4652,16 @@ function syncRun(){
   .catch(function(e){
     clearTimeout(killer);
     SY.busy=false;
+    /* "Failed to fetch" is what the browser says when it cannot find the server
+       at all, which nearly always means the sync address has a wrong character
+       in it. Say that, and name the address tried, rather than passing the
+       browser's own wording through. */
+    var reach = (e && e.name==="TypeError") ||
+                /failed to fetch|networkerror|load failed|network request failed/i.test((e && e.message) || "");
+    var host = SY.url;
+    try{ host = new URL(SY.url).host; }catch(_e){}
     SY.lastErr = (e && e.name==="AbortError") ? "The sync server did not answer in time."
+               : reach ? ("Nothing answered at " + host + ". Check the sync address one letter at a time, then press Connect this device again.")
                : (e && e.message) ? e.message : "Could not reach the sync server.";
     SY.backoff = Math.min(SY.backoff ? SY.backoff*2 : 8000, 60000);
     syncStatus("Trouble", SY.lastErr);
