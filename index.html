@@ -135,6 +135,15 @@ label.f > span{
   background:#fff; outline:none;
 }
 .inp:focus{border-color:var(--navy-2); box-shadow:0 0 0 3px rgba(43,74,128,.13)}
+/* a password that cannot be read back is a password that gets mistyped */
+.pwwrap{position:relative; display:block}
+.pwwrap .inp{padding-right:62px}
+.pweye{
+  position:absolute; right:5px; top:50%; transform:translateY(-50%);
+  border:1px solid var(--line); background:var(--line-2); color:var(--muted);
+  border-radius:6px; font-size:12px; font-weight:600; padding:5px 9px; cursor:pointer;
+}
+.pweye:hover{border-color:var(--navy-2); color:var(--navy)}
 .inp.money{text-align:right; font-variant-numeric:tabular-nums; font-weight:600}
 .inp[readonly]{background:#f6f8fc; color:var(--navy); font-weight:700}
 textarea.inp{min-height:70px; resize:vertical; line-height:1.4}
@@ -945,9 +954,12 @@ tfoot td{background:#fff6dd; font-weight:700; color:var(--navy)}
     </p>
     <div class="row">
       <label class="f">Sync address
-        <input class="inp" id="syncUrl" placeholder="https://gm-tracker-sync.YOURNAME.workers.dev" autocomplete="off" spellcheck="false"></label>
+        <input class="inp" id="syncUrl" value="https://gm-tracker-sync.ewkena2.workers.dev" placeholder="https://gm-tracker-sync.YOURNAME.workers.dev" autocomplete="off" spellcheck="false"></label>
       <label class="f">Sync password
-        <input class="inp" id="syncToken" type="password" placeholder="The password you chose" autocomplete="off"></label>
+        <span class="pwwrap">
+          <input class="inp" id="syncToken" type="password" placeholder="The password you chose" autocomplete="off">
+          <button type="button" class="pweye" id="btnPwShow" aria-label="Show the password">Show</button>
+        </span></label>
     </div>
     <div class="row" style="align-items:center">
       <button class="btn" id="btnSyncOn">Connect this device</button>
@@ -4792,6 +4804,26 @@ save = function(){ syncInnerSave(); syncTouch(); };
     syncStart(!hadCursor);
   }else{
     syncStatus("Not connected","");
+  }
+
+  /* Let the password be read back while it is being typed. It is hidden again
+     on its own, so it cannot be left showing on a screen someone walks past. */
+  var eye=document.getElementById("btnPwShow");
+  if(eye && tEl){
+    var hideAgain=null;
+    eye.onclick=function(){
+      var showing = tEl.type==="text";
+      tEl.type = showing ? "password" : "text";
+      eye.textContent = showing ? "Show" : "Hide";
+      eye.setAttribute("aria-label", showing ? "Show the password" : "Hide the password");
+      clearTimeout(hideAgain);
+      if(!showing){
+        hideAgain=setTimeout(function(){
+          tEl.type="password"; eye.textContent="Show";
+          eye.setAttribute("aria-label","Show the password");
+        }, 20000);
+      }
+    };
   }
 
   var on=document.getElementById("btnSyncOn");
