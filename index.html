@@ -255,6 +255,11 @@ tfoot td{background:#fff6dd; font-weight:700; color:var(--navy)}
   padding:10px 13px; border-radius:8px; font-size:13px; margin-top:12px}
 .note.red{background:var(--bad-bg); border-color:#e0b0b0; color:#7a1c1c}
 .note.blue{background:#eaf1fc; border-color:#b9cdea; color:#1b3a68}
+/* confirming a cheque from an earlier day without leaving the day on screen */
+.note .okchq{background:#fff; border:1px solid #a9d7bd; color:var(--good);
+  border-radius:6px; padding:3px 10px; margin-left:7px; min-height:26px;
+  font-size:12px; font-weight:700}
+.note .okchq:hover{background:var(--good-bg)}
 
 /* ---------- account marks (the real logo of each bank) ---------- */
 .lg{display:inline-flex; align-items:center; justify-content:center; width:38px; height:30px;
@@ -2358,14 +2363,18 @@ function refreshChecks(){
     var chqOld="";
     for(var ci=0;ci<chqWait.length;ci++){
       if(chqWait[ci].iso===sel) continue;              /* the ones on screen are right above */
-      var cr=chqWait[ci].r, cwait=diffDays(chqWait[ci].iso,sel);
-      chqOld+="<br>&nbsp;&nbsp;&bull; Day "+chqWait[ci].day+", "+shortDate(chqWait[ci].iso)+" &mdash; "+
+      var cr=chqWait[ci].r, ciso=chqWait[ci].iso, cwait=diffDays(ciso,sel);
+      var cn=liveRows(getDay(ciso),"cheques").indexOf(cr);   /* which line of that day it is */
+      chqOld+="<br>&nbsp;&nbsp;&bull; Day "+chqWait[ci].day+", "+shortDate(ciso)+" &mdash; "+
               (has(cr.who)?esc(cr.who):"no name")+
               (has(cr.ref)?", cheque "+esc(cr.ref):"")+
               (has(cr.bank)?", "+esc(cr.bank):"")+" &mdash; <b>"+money(num(cr.amount))+" "+C+"</b>"+
-              (cwait>0?" ("+cwait+" day"+(cwait===1?"":"s")+" waiting)":"");
+              (cwait>0?" ("+cwait+" day"+(cwait===1?"":"s")+" waiting)":"")+
+              (cn>=0?' <button type="button" class="okchq" data-chqok="'+ciso+
+                     '" data-chqi="'+cn+'">Money arrived</button>':"");
     }
-    if(chqOld) chqOld="<br><b>Waiting from earlier days</b> &mdash; open that day to mark it Arrived:"+chqOld;
+    if(chqOld) chqOld="<br><b>Waiting from earlier days</b> &mdash; press <b>Money arrived</b> the day "+
+                      "it lands. Open that day itself to say it came back unpaid:"+chqOld;
     cb.innerHTML = cbits.length
       ? '<div class="note'+(chqBad.length?" red":" blue")+'">'+cbits.join(" &nbsp;&bull;&nbsp; ")+
         "<br>A cheque is already counted in <b>Money in</b> on the day it was handed over. "+
@@ -2441,6 +2450,19 @@ document.addEventListener("click", function(e){
   var el=lstTarget(e); if(!el) return;
   var b = el.tagName==="BUTTON" ? el : (el.parentNode && el.parentNode.tagName==="BUTTON" ? el.parentNode : null);
   if(!b||!b.getAttribute) return;
+  /* The money for an old cheque lands on a later day, but the line that records
+     the cheque lives on the day it was handed over. This marks it there, so the
+     day on screen never has to be left, and nothing is counted twice. */
+  var okIso=b.getAttribute("data-chqok");
+  if(okIso){
+    var okRow=liveRows(getDay(okIso),"cheques")[parseInt(b.getAttribute("data-chqi"),10)];
+    if(okRow){
+      okRow.status="Money arrived";
+      if(!has(okRow.gotOn)) okRow.gotOn=sel;      /* it came in on the day being typed */
+      save(); recalcDay();
+    }
+    return;
+  }
   var addK=b.getAttribute("data-add"), delK=b.getAttribute("data-del");
   if(addK && LSTATE[addK]){
     LSTATE[addK].push({}); renderList(addK); recalcDay();
